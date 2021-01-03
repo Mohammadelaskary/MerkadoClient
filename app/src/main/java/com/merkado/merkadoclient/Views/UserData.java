@@ -259,6 +259,7 @@ public class UserData extends AppCompatActivity {
                                }
                            });
 
+
                         binding.summery.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -295,7 +296,7 @@ public class UserData extends AppCompatActivity {
                                         && !streetName.isEmpty()
                                         && !buildingNo.isEmpty()) {
                                     String address;
-                                    if (famousMark.isEmpty())
+                                    if (famousMark==null)
                                         address = buildingNo + " " + streetName +" ، "+ neighborhood +" ، "+city+" ، "+governorate+" شقة رقم "+ appartmentNo;
                                     else
                                         address = buildingNo + " " + streetName +" ، "+ neighborhood +" ، "+city+" ، "+governorate+" بالقرب من "+famousMark+" شقة رقم "+ appartmentNo;
@@ -335,12 +336,14 @@ public class UserData extends AppCompatActivity {
         Map<String,Object> newValue = new HashMap<>();
         newValue.put(type,value);
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        Query query = reference.orderByKey().equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        Query query = reference.orderByKey().equalTo(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid());
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot dataSnapshot:snapshot.getChildren())
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     dataSnapshot.getRef().updateChildren(newValue);
+                }
+
             }
 
             @Override
@@ -386,6 +389,8 @@ public class UserData extends AppCompatActivity {
                 Objects.requireNonNull(binding.streetName.getEditText()).setText(streetName);
                 Objects.requireNonNull(binding.buildingNo.getEditText()).setText(buildingNo);
                 Objects.requireNonNull(binding.appartmentNo.getEditText()).setText(appartmentNo);
+                if (user.getFamousMark()!= null)
+                    binding.famousMark.getEditText().setText(user.getFamousMark());
             }
         });
     }
