@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+<RelativeLayout android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center|top"
+    android:background="#FBFBFB"
+    >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_internet"
+        android:layout_centerInParent="true"
+        android:id="@+id/no_connection"
+        android:textSize="@dimen/_30ssp"
+        android:visibility="gone"/>
+
+<LinearLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:id="@+id/home_layout"
+    android:layout_centerInParent="true"
+    android:layoutDirection="rtl">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ads_title"
+        android:layout_marginTop="@dimen/_3sdp"
+        android:layout_marginBottom="@dimen/_3sdp"
+        android:paddingEnd="@dimen/_20sdp"
+        android:paddingStart="@dimen/_20sdp"
+        android:textSize="@dimen/_15ssp"
+        android:textColor="@color/white"
+        android:background="@drawable/ad_title_background"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="@dimen/_2sdp"
+        android:layout_marginBottom="@dimen/_2sdp"
+        android:layout_marginTop="@dimen/_2sdp">
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ad_shimmer">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <include layout="@layout/ad_shimmer"/>
+            <include layout="@layout/ad_shimmer"/>
+            <include layout="@layout/ad_shimmer"/>
+        </LinearLayout>
+    </com.facebook.shimmer.ShimmerFrameLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ads_recycler"
+        android:layoutDirection="rtl" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/most_sold"
+        android:paddingEnd="@dimen/_20sdp"
+        android:paddingStart="@dimen/_20sdp"
+        android:textSize="@dimen/_15ssp"
+        android:layout_marginTop="@dimen/_3sdp"
+        android:layout_marginBottom="@dimen/_3sdp"
+        android:id="@+id/most_sold_title"
+        android:textColor="@color/white"
+        android:background="@drawable/most_sold_title"/>
+<androidx.cardview.widget.CardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/_2sdp"
+    android:layout_marginTop="@dimen/_2sdp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:id="@+id/most_sold_layout">
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/most_sold_shimmer">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+        <include layout="@layout/product_shimmer_item"/>
+            <include layout="@layout/product_shimmer_item"/>
+                <include layout="@layout/product_shimmer_item"/>
+            </LinearLayout>
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/most_sold_recycler"
+        android:layout_margin="@dimen/_2sdp"
+        android:layoutDirection="rtl" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/todat_offer"
+        android:paddingEnd="@dimen/_20sdp"
+        android:paddingStart="@dimen/_20sdp"
+        android:layout_marginTop="@dimen/_3sdp"
+        android:layout_marginBottom="@dimen/_3sdp"
+        android:textSize="@dimen/_15ssp"
+        android:textColor="@color/white"
+        android:background="@drawable/most_sold_title"/>
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/_2sdp"
+        android:layout_marginTop="@dimen/_2sdp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="@dimen/_2sdp">
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/today_offer_shimmer">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <include layout="@layout/product_shimmer_item"/>
+            <include layout="@layout/product_shimmer_item"/>
+            <include layout="@layout/product_shimmer_item"/>
+        </LinearLayout>
+    </com.facebook.shimmer.ShimmerFrameLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layoutDirection="rtl"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="@dimen/_115sdp"
+            android:layout_height="@dimen/_230sdp"
+            android:layout_margin="@dimen/_6sdp"
+            android:id="@+id/special_offer"
+            android:gravity="center_horizontal"
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:background="@drawable/product_background">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="مفاجأة اليوم"
+                android:textColor="@color/product_stroke"
+                android:textSize="@dimen/_20ssp"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_20ssp"
+                android:paddingStart="@dimen/_10sdp"
+                android:paddingEnd="@dimen/_10sdp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="اشتري منتجات بـ"
+                android:textColor="@color/product_stroke_checked"
+                android:textSize="@dimen/_13ssp"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:gravity="center_horizontal"
+                android:padding="@dimen/_3sdp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layoutDirection="rtl"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1000"
+                    android:textColor="@color/product_stroke"
+                    android:textSize="@dimen/_15ssp"
+                    android:gravity="center_horizontal"
+                    android:padding="@dimen/_3sdp"
+                    android:id="@+id/minimum"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="جنيه"
+                    android:textColor="#06600A"
+                    android:textSize="@dimen/_13ssp"
+                    android:gravity="center_horizontal"
+                    android:padding="@dimen/_3sdp" />
+
+            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="واحصل على خصم"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:textColor="@color/product_stroke_checked"
+                android:textSize="@dimen/_13ssp"
+                android:gravity="center_horizontal"
+                android:padding="@dimen/_3sdp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layoutDirection="rtl"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:background="@drawable/total_discount_background">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="120"
+                    android:textColor="@color/product_stroke"
+                    android:textSize="@dimen/_25ssp"
+                    android:gravity="center_horizontal"
+                    android:padding="@dimen/_3sdp"
+                    android:id="@+id/discount"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="جنيه"
+                    android:id="@+id/discount_type"
+                    android:textColor="#06600A"
+                    android:textSize="@dimen/_13ssp"
+                    android:gravity="center_horizontal"
+                    android:padding="@dimen/_3sdp" />
+
+            </LinearLayout>
+        </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/today_offer_recycler"
+            android:gravity="center"
+            android:layoutDirection="rtl" />
+
+    </LinearLayout>
+    </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:background="@drawable/shopping_button"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:id="@+id/go_shopping"
+            android:layout_marginBottom="@dimen/_10sdp"
+            android:paddingStart="@dimen/_20sdp"
+            android:paddingEnd="@dimen/_20sdp"
+            android:clickable="true"
+            android:focusable="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/_30ssp"
+            android:text="@string/go_shopping"
+            android:textColor="@color/white"/>
+        </LinearLayout>
+
+</LinearLayout>
+</RelativeLayout>
+</ScrollView>

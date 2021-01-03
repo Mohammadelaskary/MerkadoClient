@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Views.MapActivity"
+    android:orientation="vertical"
+    android:layoutDirection="rtl">
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="حرك الخريطة لتحديد موقعك بدقة وتأكد من عنوانك ثم اضغط تأكيد"
+        android:layout_margin="@dimen/_3sdp"/>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_map_marker"
+        android:layout_centerInParent="true"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/_3sdp"
+        android:background="@color/white"
+        android:layout_alignParentBottom="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="العنوان المحدد: "
+            android:id="@+id/address_title"
+            android:textSize="@dimen/_10ssp"
+            android:fontFamily="@font/arabic_font"
+            android:layout_margin="@dimen/_1sdp"
+
+            android:layout_centerVertical="true"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/address"
+            android:layout_toEndOf="@id/address_title"
+            android:layout_toStartOf="@id/confirm"
+            android:textSize="@dimen/_12ssp"
+            android:textColor="@color/colorPrimaryDark"
+            android:fontFamily="@font/arabic_font"
+            android:layout_marginStart="@dimen/_1sdp"
+            android:layout_centerVertical="true"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?buttonStyleSmall"
+            android:backgroundTint="@color/home"
+            android:text="تأكيد"
+            android:id="@+id/confirm"
+            android:fontFamily="@font/arabic_font"
+            android:textColor="@color/white"
+            android:padding="@dimen/_3sdp"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="@dimen/_3sdp"
+            />
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#41a2d5</color>
+    <color name="colorPrimaryDark">#053047</color>
+    <color name="colorAccent">#FF5722</color>
+    <color name="home">#4CAF50</color>
+    <color name="offers">#673AB7</color>
+    <color name="white">#fff</color>
+    <color name="discount">#FFEB3B</color>
+    <color name="shimmer_color">#CDCDCD</color>
+    <color name="product_stroke">#C61616</color>
+    <color name="product_stroke_checked">#144967</color>
+    <color name="unavailable_background">#79000000</color>
+
+</resources>

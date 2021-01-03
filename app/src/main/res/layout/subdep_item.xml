@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="@dimen/_80sdp"
+    android:layout_height="@dimen/_80sdp"
+    android:background="@drawable/subdep_background"
+    android:gravity="center"
+    android:layout_margin="@dimen/_5sdp"
+    android:id="@+id/subdep_button"
+    android:clickable="true"
+    android:focusable="true"
+    >
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/_20ssp"
+        android:text="خضروات"
+        android:gravity="center"
+        android:id="@+id/subdep_name"
+        android:textColor="@color/white"/>
+</LinearLayout>

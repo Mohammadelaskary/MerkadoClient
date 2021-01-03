@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="@dimen/_5sdp"
+    app:cardCornerRadius="@dimen/_5sdp"
+    android:layoutDirection="rtl">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/_5sdp"
+        android:gravity="top">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:orientation="horizontal"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_13ssp"
+                android:text="12/5/2020"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="@dimen/_5sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:id="@+id/order_date" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:00 am"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/order_date"
+                android:textSize="@dimen/_13ssp"
+                android:id="@+id/order_time"/>
+
+
+
+        </RelativeLayout>
+        <com.kofigyan.stateprogressbar.StateProgressBar
+            android:id="@+id/state_progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:spb_maxStateNumber="four"
+            app:spb_stateBackgroundColor="#BDBDBD"
+            app:spb_stateForegroundColor="#0B810B"
+            app:spb_stateNumberBackgroundColor="#CDCCCC"
+            app:spb_stateNumberForegroundColor="#eeeeee"
+            app:spb_currentStateDescriptionColor="#0B810B"
+            app:spb_stateDescriptionColor="#CDCCCC"
+            app:spb_checkStateCompleted="true"
+            app:spb_animateToCurrentProgressState="true"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="اسم العميل:"
+                android:textSize="@dimen/_12ssp"
+                android:layout_marginEnd="@dimen/_5sdp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_16ssp"
+                android:text="01122288551"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/customer_name"/>
+
+
+        </LinearLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="start|center_vertical"
+            android:layout_marginTop="@dimen/_5sdp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="رقم التليفون المحمول:"
+                android:layout_alignParentStart="true"
+                android:textSize="@dimen/_12ssp"
+                android:id="@+id/mobile_phone_title"
+                android:layout_centerVertical="true"
+                android:maxLines="1"
+                android:layout_marginEnd="@dimen/_5sdp"/>
+
+            <TextView
+                android:layout_width="@dimen/_175sdp"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_16ssp"
+                android:text="10 شارع بيومي فراج متفرع من شارع عزام حدائق القبة "
+                android:layout_toEndOf="@id/mobile_phone_title"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/mobile_phone"
+                />
+
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="start|center_vertical"
+            android:layout_marginTop="@dimen/_5sdp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="العنـــــــــــــــــوان:"
+                android:layout_alignParentStart="true"
+                android:textSize="@dimen/_12ssp"
+                android:id="@+id/address_title"
+                android:layout_centerVertical="true"
+                android:maxLines="1"
+                android:layout_marginEnd="@dimen/_5sdp"/>
+
+            <TextView
+                android:layout_width="@dimen/_175sdp"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_16ssp"
+                android:text="10 شارع بيومي فراج متفرع من شارع عزام حدائق القبة "
+                android:layout_toEndOf="@id/address_title"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/customer_address"
+                />
+
+
+        </RelativeLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="رقم التليفون الأرضي:"
+                android:textSize="@dimen/_12ssp"
+                android:layout_marginEnd="@dimen/_5sdp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_16ssp"
+                android:text="01122288551"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/phone_number"/>
+
+
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="الطلبـــــــــــــــــات:"
+            android:textSize="@dimen/_12ssp"
+            android:layout_gravity="start"
+            android:layout_marginTop="@dimen/_5sdp"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/orders"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_32sdp"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:layout_gravity="top"
+            >
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="المجمــــــــــــــــــــــوع:"
+                android:textSize="@dimen/_12ssp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_20ssp"
+                android:text="75.00"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/sum"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="جنيه"
+                android:textSize="@dimen/_12ssp"
+                android:textColor="@color/home"
+                />
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_32sdp"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:layout_gravity="top"
+            >
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="الخصــــــــــــــــــــــــــم:"
+                android:textSize="@dimen/_12ssp"
+                android:layout_marginEnd="@dimen/_5sdp"
+
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_20ssp"
+                android:text="75.00"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/discount"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="جنيه"
+                android:textSize="@dimen/_12ssp"
+                android:textColor="@color/home"
+                />
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_32sdp"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:layout_gravity="top"
+            >
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="الخصم علي المجموع:"
+                android:textSize="@dimen/_12ssp"
+                android:layout_marginEnd="@dimen/_5sdp"
+
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_20ssp"
+                android:text="75.00"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/over_all_discount"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="جنيه"
+                android:textSize="@dimen/_12ssp"
+                android:textColor="@color/home"
+                />
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_32sdp"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:layout_gravity="top"
+            >
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="التوصيــــــــــــــــــــــــل:"
+                android:textSize="@dimen/_12ssp"
+                android:layout_marginEnd="@dimen/_5sdp"
+
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_20ssp"
+                android:text="75.00"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/shipping_fee"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="جنيه"
+                android:textSize="@dimen/_12ssp"
+                android:textColor="@color/home"
+                />
+
+
+        </LinearLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_32sdp"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:layout_gravity="top"
+            >
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="الحســــــاب الكــــــلي:"
+                android:textSize="@dimen/_12ssp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                android:layout_alignParentStart="true"
+                android:id="@+id/payment_title"
+                android:layout_centerVertical="true"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_20ssp"
+                android:text="75.00"
+                android:layout_toEndOf="@id/payment_title"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:textColor="@color/colorPrimaryDark"
+                android:id="@+id/net_cost"
+                android:layout_centerVertical="true"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="جنيه"
+                android:layout_toEndOf="@id/net_cost"
+                android:textSize="@dimen/_12ssp"
+                android:textColor="@color/colorAccent"
+                android:layout_centerVertical="true"
+                />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="@dimen/_3sdp"
+                android:text="إلغاء الطلب"
+                android:textColor="@color/white"
+                android:backgroundTint="#ff0000"
+                android:id="@+id/cancel_order"/>
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center|top"
+    android:layoutDirection="rtl">
+    <com.google.android.material.appbar.MaterialToolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/toolbar_background"
+        android:id="@+id/toolbar"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:gravity="center">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layoutDirection="rtl">
+
+            <ImageView android:layout_width="@dimen/_100sdp"
+                android:layout_height="@dimen/_55ssp"
+                android:src="@drawable/ic_merkado_app_small"
+                android:id="@+id/big_logo"
+                />
+                <TextView
+                    android:layout_width="@dimen/_17sdp"
+                    android:layout_height="@dimen/_17sdp"
+                    android:padding="@dimen/_1sdp"
+                    android:text="3"
+                    android:layout_marginTop = "@dimen/_10sdp"
+                    android:layout_marginStart="@dimen/_55sdp"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:id="@+id/cart_count"
+                    android:textSize="@dimen/_10ssp"
+                    android:background="@drawable/cart_indecator_background"
+                    />
+            </RelativeLayout>
+
+    </com.google.android.material.appbar.MaterialToolbar>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dep_name"
+        android:textSize="@dimen/_20sdp"
+        android:text="خضروات"
+        android:textColor="@color/white"
+        android:background="@drawable/most_sold_title"
+        android:paddingEnd="@dimen/_40sdp"
+        android:paddingStart="@dimen/_40sdp"
+        android:layout_marginTop="@dimen/_5sdp"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/subdep_name"
+        android:textSize="@dimen/_14sdp"
+        android:text="جاهزة"
+        android:textColor="@color/colorPrimaryDark"
+        android:background="@drawable/subdep_background_product"
+        android:paddingEnd="@dimen/_30sdp"
+        android:paddingStart="@dimen/_30sdp"
+        android:layout_marginTop="@dimen/_5sdp"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/no_products"
+        android:textSize="@dimen/_20sdp"
+        android:text="لا يوجد منتجات"
+        android:paddingEnd="@dimen/_30sdp"
+        android:paddingStart="@dimen/_30sdp"
+        android:layout_marginTop="@dimen/_5sdp"
+        android:visibility="gone"
+        />
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:id="@+id/products_rec"
+        android:layout_marginTop="@dimen/_5sdp"
+        />
+</LinearLayout>

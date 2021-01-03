@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Views.MainActivity"
+    android:layoutDirection="rtl"
+    android:background="#FBFBFB"
+    android:id="@+id/main_layout">
+  <com.google.android.material.appbar.MaterialToolbar
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@drawable/toolbar_background"
+      android:id="@+id/toolbar"
+      android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+      android:gravity="center">
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layoutDirection="rtl">
+
+    <ImageView android:layout_width="@dimen/_100sdp"
+        android:layout_height="@dimen/_60sdp"
+        android:src="@drawable/ic_merkado_app_small"
+        android:id="@+id/big_logo"
+        />
+
+        <TextView
+            android:layout_width="@dimen/_17sdp"
+            android:layout_height="@dimen/_17sdp"
+            android:padding="@dimen/_1sdp"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:layout_marginStart="@dimen/_55sdp"
+            android:text="3"
+            android:visibility="gone"
+            android:id="@+id/cart_count"
+            android:textSize="@dimen/_10ssp"
+            android:gravity="center"
+            android:background="@drawable/cart_indecator_background"
+            />
+    </RelativeLayout>
+  </com.google.android.material.appbar.MaterialToolbar>
+  <FrameLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_centerInParent="true"
+      android:layout_below="@id/toolbar"
+      android:id="@+id/fragment_container"
+      android:layout_above="@id/bottom_nav"/>
+
+
+  <com.google.android.material.bottomnavigation.BottomNavigationView
+      android:id="@+id/bottom_nav"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      app:menu="@menu/menu_bottom_navigation"
+      android:layout_centerInParent="true"
+      android:layout_alignParentBottom="true"
+      app:itemBackground="@android:color/white"
+      app:labelVisibilityMode="selected"
+      android:elevation="@dimen/_15sdp"/>
+
+</RelativeLayout>

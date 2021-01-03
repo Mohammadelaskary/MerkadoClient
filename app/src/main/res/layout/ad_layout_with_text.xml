@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="@dimen/_100sdp"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="@dimen/_5sdp"
+    android:layout_marginStart="@dimen/_2sdp"
+    android:layout_marginEnd="@dimen/_2sdp"
+    android:layout_marginTop="@dimen/_1sdp"
+    android:layout_marginBottom="@dimen/_1sdp">
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_80sdp"
+        android:id="@+id/ad_image"
+        android:src="@drawable/put_your_ad_here"
+        android:scaleType="fitCenter"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ad_text"
+        android:layout_marginTop="@dimen/_1sdp"
+        android:text="للتواصل اتصل علي / 01122288551"/>
+</LinearLayout>
+</androidx.cardview.widget.CardView>
