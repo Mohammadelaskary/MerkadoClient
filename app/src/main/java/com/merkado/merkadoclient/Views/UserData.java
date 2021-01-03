@@ -294,8 +294,11 @@ public class UserData extends AppCompatActivity {
                                         && !neighborhood.isEmpty()
                                         && !streetName.isEmpty()
                                         && !buildingNo.isEmpty()) {
-
-                                    String address = buildingNo + streetName + " ، " + neighborhood + " ، " + city + " ، " + governorate + " ، شقة رقم " + appartmentNo;
+                                    String address;
+                                    if (famousMark.isEmpty())
+                                        address = buildingNo + " " + streetName +" ، "+ neighborhood +" ، "+city+" ، "+governorate+" شقة رقم "+ appartmentNo;
+                                    else
+                                        address = buildingNo + " " + streetName +" ، "+ neighborhood +" ، "+city+" ، "+governorate+" بالقرب من "+famousMark+" شقة رقم "+ appartmentNo;
                                     ShippingData shippingData = new ShippingData(username, mobileNumber, phoneNumber, address);
                                     shippingData.setCity(city);
                                     if (!famousMark.isEmpty())
@@ -333,7 +336,7 @@ public class UserData extends AppCompatActivity {
         newValue.put(type,value);
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
         Query query = reference.orderByKey().equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot dataSnapshot:snapshot.getChildren())
