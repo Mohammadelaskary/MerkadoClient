@@ -1,29 +1,18 @@
 package com.merkado.merkadoclient.Views;
 
-import android.Manifest;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -36,20 +25,14 @@ import com.google.firebase.database.ValueEventListener;
 import com.merkado.merkadoclient.Database.ShippingData;
 import com.merkado.merkadoclient.Model.Neighborhood;
 import com.merkado.merkadoclient.Model.User;
-import com.merkado.merkadoclient.MyApp;
 import com.merkado.merkadoclient.R;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
 import com.merkado.merkadoclient.databinding.ActivityUserDataBinding;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -59,15 +42,16 @@ public class UserData extends AppCompatActivity {
     ActivityUserDataBinding binding;
     HomeViewModel homeViewModel;
     User user;
-    List<String> citiesList = new ArrayList<>();
-    ArrayAdapter<String> citiesAdapter;
-    String city,governorate,neighborhood,streetName,buildingNo,appartmentNo;
+    List<String> neighborhoodsList = new ArrayList<>();
+    ArrayAdapter<String> neighborhoodsAdapter;
+    String neighborhood,governorate, city,streetName,buildingNo,appartmentNo;
     boolean isGovernorateChanged = false;
-    boolean isCityChanged = false;
+    boolean isNeighborhoodChanged = false;
     boolean isStreetNameChanged = false;
     boolean isBuildingNoChanged = false;
     boolean isAppartmentNoChanged = false;
     boolean isFamousMarkChanged = false;
+    boolean isCityChanged = false;
 
 
     @Override
@@ -85,14 +69,14 @@ public class UserData extends AppCompatActivity {
 
         getUserData();
         getAllCities();
-        citiesList.add("اختر المدينة");
-        citiesAdapter = new ArrayAdapter<>(UserData.this, android.R.layout.simple_spinner_dropdown_item, citiesList);
-        binding.city.setAdapter(citiesAdapter);
+        neighborhoodsList.add("اختر المدينة");
+        neighborhoodsAdapter = new ArrayAdapter<>(UserData.this, android.R.layout.simple_spinner_dropdown_item, neighborhoodsList);
+        binding.neighborhood.setAdapter(neighborhoodsAdapter);
         MainActivity.dataBase.myDao().deleteAllShippingData();
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle("بيانات الطلب");
-//        updateValue("mohamed","myname");
+
         Objects.requireNonNull(binding.username.getEditText()).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -246,11 +230,11 @@ public class UserData extends AppCompatActivity {
                     }
                 });
 
-                binding.city.setOnItemSelectedListener(
+                binding.neighborhood.setOnItemSelectedListener(
                         new AdapterView.OnItemSelectedListener() {
                                @Override
                                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                   isCityChanged = true;
+                                   isNeighborhoodChanged = true;
                                }
 
                                @Override
@@ -259,7 +243,29 @@ public class UserData extends AppCompatActivity {
                                }
                            });
 
+        binding.city.getEditText().addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        String city = binding.city.getEditText().getText().toString().trim();
+                        if (city.isEmpty())
+                            binding.city.setError("من فضلك ادخل اسم المدينة");
+                        else{
+                            binding.city.setError(null);
+                            isCityChanged = true;
+                        }
+                    }
+                });
                         binding.summery.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -271,8 +277,8 @@ public class UserData extends AppCompatActivity {
                                 buildingNo = binding.buildingNo.getEditText().getText().toString().trim();
                                 appartmentNo = binding.appartmentNo.getEditText().getText().toString().trim();
                                 String promoCode = Objects.requireNonNull(binding.promoCode.getEditText()).getText().toString().trim();
-                                city = binding.city.getSelectedItem().toString();
-                                neighborhood = Objects.requireNonNull(binding.neighborhood.getEditText()).getText().toString().trim();
+                                neighborhood = binding.neighborhood.getSelectedItem().toString();
+                                city = Objects.requireNonNull(binding.city.getEditText()).getText().toString().trim();
                                 String famousMark = binding.famousMark.getEditText().getText().toString().trim();
                                 if (username.isEmpty())
                                     binding.username.setError("ادخل اسم العميل");
@@ -280,8 +286,8 @@ public class UserData extends AppCompatActivity {
                                     binding.mobileNumber.setError("ادخل رقم المحمول");
                                 if (governorate.isEmpty())
                                     binding.governorate.setError("ادخل المحافظة");
-                                if (neighborhood.isEmpty())
-                                    binding.neighborhood.setError("ادخل اسم الحي");
+                                if (city.isEmpty())
+                                    binding.city.setError("ادخل اسم الحي");
                                 if (streetName.isEmpty())
                                     binding.streetName.setError("ادخل اسم الشارع/المنطقة");
                                 if (buildingNo.isEmpty())
@@ -292,21 +298,21 @@ public class UserData extends AppCompatActivity {
                                         && !mobileNumber.isEmpty()
                                         && !appartmentNo.isEmpty()
                                         && !governorate.isEmpty()
-                                        && !neighborhood.isEmpty()
+                                        && !city.isEmpty()
                                         && !streetName.isEmpty()
                                         && !buildingNo.isEmpty()) {
                                     String address;
                                     if (famousMark==null)
-                                        address = buildingNo + " " + streetName +" ، "+ neighborhood +" ، "+city+" ، "+governorate+" شقة رقم "+ appartmentNo;
+                                        address = buildingNo + " " + streetName +" ، "+ city +" ، "+ city +" ، "+governorate+" شقة رقم "+ appartmentNo;
                                     else
-                                        address = buildingNo + " " + streetName +" ، "+ neighborhood +" ، "+city+" ، "+governorate+" بالقرب من "+famousMark+" شقة رقم "+ appartmentNo;
+                                        address = buildingNo + " " + streetName +" ، "+ city +" ، "+ city +" ، "+governorate+" بالقرب من "+famousMark+" شقة رقم "+ appartmentNo;
                                     ShippingData shippingData = new ShippingData(username, mobileNumber, phoneNumber, address);
                                     shippingData.setCity(city);
                                     if (!famousMark.isEmpty())
                                         shippingData.setFamousMark(famousMark);
 
-                                    if (isCityChanged)
-                                        updateValue(city, "city");
+                                    if (isNeighborhoodChanged)
+                                        updateValue(neighborhood, "neighborhood ");
                                     if (isAppartmentNoChanged)
                                         updateValue(appartmentNo, "appartmentNo");
                                     if (isBuildingNoChanged)
@@ -317,6 +323,8 @@ public class UserData extends AppCompatActivity {
                                         updateValue(governorate, "governorate");
                                     if (isStreetNameChanged)
                                         updateValue(streetName, "streetName");
+                                    if (isCityChanged)
+                                        updateValue(city,"city");
                                     MainActivity.dataBase.myDao().addShippingData(shippingData);
                                     Intent intent1 = getIntent();
                                     int subtractedPoints = intent1.getIntExtra("subtractedPoints", 0);
@@ -380,12 +388,12 @@ public class UserData extends AppCompatActivity {
                     Objects.requireNonNull(binding.phoneNumber.getEditText()).setText(phoneNumber);
                 city = user.getCity();
                 governorate = user.getGovernorate();
-                neighborhood = user.getNeighborhood();
+                city = user.getNeighborhood();
                 streetName = user.getStreetName();
                 buildingNo = user.getBuildingNo();
                 appartmentNo = user.getAppartmentNo();
                 Objects.requireNonNull(binding.governorate.getEditText()).setText(governorate);
-                Objects.requireNonNull(binding.neighborhood.getEditText()).setText(neighborhood);
+                Objects.requireNonNull(binding.city.getEditText()).setText(city);
                 Objects.requireNonNull(binding.streetName.getEditText()).setText(streetName);
                 Objects.requireNonNull(binding.buildingNo.getEditText()).setText(buildingNo);
                 Objects.requireNonNull(binding.appartmentNo.getEditText()).setText(appartmentNo);
@@ -416,16 +424,16 @@ public class UserData extends AppCompatActivity {
         homeViewModel.getNeighborhoodLiveData().observe(this, new Observer<List<Neighborhood>>() {
             @Override
             public void onChanged(List<Neighborhood> neighborhoods) {
-                citiesList.clear();
+                neighborhoodsList.clear();
                 for (Neighborhood neighborhood : neighborhoods) {
-                    citiesList.add(neighborhood.getNeighborhood());
+                    neighborhoodsList.add(neighborhood.getNeighborhood());
                 }
-                citiesAdapter.notifyDataSetChanged();
+                neighborhoodsAdapter.notifyDataSetChanged();
                 binding.neighborhoodLoading.hide();
 
-                if (citiesList.contains(city)) {
-                    int position = citiesAdapter.getPosition(city);
-                    binding.city.setSelection(position);
+                if (neighborhoodsList.contains(city)) {
+                    int position = neighborhoodsAdapter.getPosition(city);
+                    binding.neighborhood.setSelection(position);
                 } else {
                     new AlertDialog.Builder(UserData.this)
                             .setMessage(getString(R.string.apologize))
