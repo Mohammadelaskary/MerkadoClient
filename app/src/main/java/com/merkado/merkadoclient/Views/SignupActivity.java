@@ -7,6 +7,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,8 +18,13 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
+import com.merkado.merkadoclient.Model.Neighborhood;
 import com.merkado.merkadoclient.Model.User;
 import com.merkado.merkadoclient.MyMethods;
+import com.merkado.merkadoclient.R;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
 import com.merkado.merkadoclient.databinding.ActivitySignupBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -35,12 +42,19 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class SignupActivity extends AppCompatActivity {
+public class SignupActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
     ActivitySignupBinding binding;
     HomeViewModel homeViewModel;
-    String mobileNumber;
     List<String> promoCodes = new ArrayList<>();
     FirebaseAuth mAuth;
+    FirebaseDatabase database;
+    List<Neighborhood> neighborhoods = new ArrayList<>();
+    List<String> governoratesNames = new ArrayList<>();
+    List<String> citiesNames       = new ArrayList<>();
+    List<String> neighborhoodsNames = new ArrayList<>();
+    ArrayAdapter<String> governoratesAdapter;
+    ArrayAdapter<String> citiesAdapter;
+    ArrayAdapter<String> neighborhoodsAdapter;
     ProgressDialog progressDialog;
     boolean isUploaded = false;
 
@@ -50,6 +64,7 @@ public class SignupActivity extends AppCompatActivity {
         binding = ActivitySignupBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         mAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("رجاء الانتظار ..");
 
@@ -59,8 +74,51 @@ public class SignupActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         getUsersPromoCode();
+        attachSpinnersToAdapters();
         Objects.requireNonNull(getSupportActionBar()).setTitle("إنشاء حساب جديد");
+        setTextWatchers();
+        getNeighborhoods();
+        connectViewsToOnClick();
 
+
+
+    }
+
+    private void connectViewsToOnClick() {
+        binding.signup.setOnClickListener(this);
+        binding.governorateNameSpinner.setOnItemSelectedListener(this);
+        binding.cityNameSpinner.setOnItemSelectedListener(this);
+    }
+
+    private void getNeighborhoods() {
+        binding.governorateNamesProgress.show();
+        DatabaseReference reference = database.getReference("Neighborhood");
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                binding.governorateNamesProgress.hide();
+                neighborhoods.clear();
+                governoratesNames.clear();
+                for (DataSnapshot dataSnapshot:snapshot.getChildren()){
+                    Neighborhood neighborhood = dataSnapshot.getValue(Neighborhood.class);
+                    neighborhoods.add(neighborhood);
+                    governoratesNames.add(neighborhood.getGovernorate());
+                    governoratesAdapter.notifyDataSetChanged();
+
+                }
+                getCitiesNames(governoratesNames.get(0));
+                getNeighborhoodsNames(neighborhoods.get(0).getCity());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                FancyToast.makeText(SignupActivity.this,"حدث خطأ ما أثناء إيجاد أسماء المحافظات المتاحة..", FancyToast.LENGTH_SHORT,FancyToast.ERROR,false).show();
+                Log.d("errorGettingGovernorate", error.getMessage());
+            }
+        });
+    }
+
+    private void setTextWatchers() {
         Objects.requireNonNull(binding.customerName.getEditText()).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -116,60 +174,7 @@ public class SignupActivity extends AppCompatActivity {
                     binding.streetName.setError("من فضلك ادخل اسم الشارع/المنطقة");
             }
         });
-        Objects.requireNonNull(binding.governorate.getEditText()).addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.governorate.setError(null);
-            }
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.governorate.setError(null);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                String governorate = binding.governorate.getEditText().getText().toString().trim();
-                if (governorate.isEmpty())
-                    binding.governorate.setError("من فضلك ادخل اسم المحافظة");
-            }
-        });
-        Objects.requireNonNull(binding.city.getEditText()).addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.city.setError(null);
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.city.setError(null);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                String city = binding.city.getEditText().getText().toString().trim();
-                if (city.isEmpty())
-                    binding.city.setError("من فضلك ادخل اسم المدينة");
-            }
-        });
-        Objects.requireNonNull(binding.neighborhood.getEditText()).addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.neighborhood.setError(null);
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.neighborhood.setError(null);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                String neighborhood = binding.neighborhood.getEditText().getText().toString().trim();
-                if (neighborhood.isEmpty())
-                    binding.neighborhood.setError("من فضلك ادخل اسم الحي");
-            }
-        });
 
         Objects.requireNonNull(binding.email.getEditText()).addTextChangedListener(new TextWatcher() {
             @Override
@@ -184,7 +189,7 @@ public class SignupActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                String email = binding.neighborhood.getEditText().getText().toString().trim();
+                String email = binding.email.getEditText().getText().toString().trim();
                 if (email.isEmpty())
                     binding.email.setError("من فضلك ادخل البريد الالكتروني");
             }
@@ -225,80 +230,15 @@ public class SignupActivity extends AppCompatActivity {
                     binding.confirmPassword.setError("من فضلك ادخل كلمة المرور مرة أخري للتأكيد");
             }
         });
+    }
 
-
-        binding.signup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                String customerName = binding.customerName.getEditText().getText().toString().trim();
-                String streetName = Objects.requireNonNull(binding.streetName.getEditText()).getText().toString().trim();
-                String governorate = Objects.requireNonNull(binding.governorate.getEditText()).getText().toString().trim();
-                String city = Objects.requireNonNull(binding.city.getEditText()).getText().toString().trim();
-                String neighborhood = Objects.requireNonNull(binding.neighborhood.getEditText()).getText().toString().trim();
-                String phoneNumber = binding.phoneNumber.getEditText().getText().toString().trim();
-                String mobileNumber = binding.mobileNumber.getEditText().getText().toString().trim();
-                String email = binding.email.getEditText().getText().toString().trim();
-                String password = binding.password.getEditText().getText().toString().trim();
-                String confirmPassword = binding.confirmPassword.getEditText().getText().toString().trim();
-                if (customerName.isEmpty()) {
-                    binding.customerName.setError("من فضلك ادخل الاسم الأول");
-                }
-                if (streetName.isEmpty()){
-                    binding.streetName.setError("من فضلك ادخل اسم الشارع أو المنطقة");
-                }
-                if (neighborhood.isEmpty())
-                    binding.neighborhood.setError("من فضلك ادخل اسم الحي");
-                if (governorate.isEmpty())
-                    binding.governorate.setError("من فضلك ادخل اسم الحي");
-                if (city.isEmpty())
-                    binding.city.setError("من فضلك ادخل اسم الحي");
-                if (mobileNumber.isEmpty())
-                    binding.mobileNumber.setError("من فضلك ادخل رقم التليفون المحمول");
-                if (mobileNumber.length()!=11)
-                    binding.mobileNumber.setError("من فضلك ادخل رقم تليفون صحيح");
-                if (email.isEmpty()){
-                    binding.customerName.setError("من فضلك ادخل البريد الالكتروني");
-                }
-                if (!MyMethods.isValidEmail(email)){
-                    binding.customerName.setError("من فضلك ادخل بريد الكتروني صحيح");
-                }
-                if (password.isEmpty()){
-                    binding.customerName.setError("من فضلك ادخل كلمة المرور");
-                }
-                if (confirmPassword.isEmpty())
-                    binding.confirmPassword.setError("من فضلك ادخل كلمة المرور مرة أخري للتأكيد");
-                if (!password.equals(confirmPassword))
-                    binding.confirmPassword.setError("كلمتي المرور غير متطابقتين");
-                if (!customerName.isEmpty()
-                        && !streetName.isEmpty()
-                        && !neighborhood.isEmpty()
-                        && mobileNumber.length() == 11
-                        && password.equals(confirmPassword)
-                        &&!email.isEmpty()
-                        && MyMethods.isValidEmail(email)
-                        && !password.isEmpty()
-                        && !governorate.isEmpty()
-                        && !city.isEmpty()) {
-                    if (!isUploaded)
-                        progressDialog.show();
-                        mAuth.createUserWithEmailAndPassword(email,password)
-                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()){
-                                    storeData(customerName,mobileNumber,phoneNumber,streetName,neighborhood,email,governorate,city);
-                                } else{
-                                    FancyToast.makeText(SignupActivity.this,"حدث خطأ ما!",FancyToast.LENGTH_LONG,FancyToast.ERROR,false).show();
-                                    Log.e("sign_up_error",task.getException().getMessage());
-                                }
-
-                            }
-                        });
-
-                }
-            }
-        });
+    private void attachSpinnersToAdapters() {
+        governoratesAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,governoratesNames);
+        citiesAdapter       = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,citiesNames);
+        neighborhoodsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,neighborhoodsNames);
+        binding.governorateNameSpinner.setAdapter(governoratesAdapter);
+        binding.cityNameSpinner.setAdapter(citiesAdapter);
+        binding.neighborhoodNameSpinner.setAdapter(neighborhoodsAdapter);
     }
 
     private void storeData(String customerName, String mobileNumber, String phoneNumber, String streetName, String neighborhood, String email, String governorate, String city) {
@@ -372,5 +312,114 @@ public class SignupActivity extends AppCompatActivity {
         super.onStop();
         if (!isUploaded)
             mAuth.signOut();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.signup:{
+
+                String customerName = binding.customerName.getEditText().getText().toString().trim();
+                String streetName = Objects.requireNonNull(binding.streetName.getEditText()).getText().toString().trim();
+                String governorate = binding.governorateNameSpinner.getSelectedItem().toString();
+                String city = binding.cityNameSpinner.getSelectedItem().toString();
+                String neighborhood = binding.neighborhoodNameSpinner.getSelectedItem().toString();
+                String phoneNumber = binding.phoneNumber.getEditText().getText().toString().trim();
+                String mobileNumber = binding.mobileNumber.getEditText().getText().toString().trim();
+                String email = binding.email.getEditText().getText().toString().trim();
+                String password = binding.password.getEditText().getText().toString().trim();
+                String confirmPassword = binding.confirmPassword.getEditText().getText().toString().trim();
+                if (customerName.isEmpty()) {
+                    binding.customerName.setError("من فضلك ادخل الاسم الأول");
+                }
+                if (streetName.isEmpty()){
+                    binding.streetName.setError("من فضلك ادخل اسم الشارع أو المنطقة");
+                }
+                if (mobileNumber.isEmpty())
+                    binding.mobileNumber.setError("من فضلك ادخل رقم التليفون المحمول");
+                if (mobileNumber.length()!=11)
+                    binding.mobileNumber.setError("من فضلك ادخل رقم تليفون صحيح");
+                if (email.isEmpty()){
+                    binding.customerName.setError("من فضلك ادخل البريد الالكتروني");
+                }
+                if (!MyMethods.isValidEmail(email)){
+                    binding.customerName.setError("من فضلك ادخل بريد الكتروني صحيح");
+                }
+                if (password.isEmpty()){
+                    binding.customerName.setError("من فضلك ادخل كلمة المرور");
+                }
+                if (confirmPassword.isEmpty())
+                    binding.confirmPassword.setError("من فضلك ادخل كلمة المرور مرة أخري للتأكيد");
+                if (!password.equals(confirmPassword))
+                    binding.confirmPassword.setError("كلمتي المرور غير متطابقتين");
+                if (!customerName.isEmpty()
+                        && !streetName.isEmpty()
+                        && !neighborhood.isEmpty()
+                        && mobileNumber.length() == 11
+                        && password.equals(confirmPassword)
+                        &&!email.isEmpty()
+                        && MyMethods.isValidEmail(email)
+                        && !password.isEmpty()
+                        && !governorate.isEmpty()
+                        && !city.isEmpty()) {
+                    if (!isUploaded)
+                        progressDialog.show();
+                    mAuth.createUserWithEmailAndPassword(email,password)
+                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()){
+                                        storeData(customerName,mobileNumber,phoneNumber,streetName,neighborhood,email,governorate,city);
+                                    } else{
+                                        FancyToast.makeText(SignupActivity.this,"حدث خطأ ما!",FancyToast.LENGTH_LONG,FancyToast.ERROR,false).show();
+                                        Log.e("sign_up_error",task.getException().getMessage());
+                                    }
+
+                                }
+                            });
+
+                }
+            } break;
+        }
+    }
+
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        switch (view.getId()){
+            case R.id.governorate_name_spinner:{
+                String governorateName = binding.governorateNameSpinner.getSelectedItem().toString();
+                getCitiesNames(governorateName);
+            } break;
+            case R.id.city_name_spinner:{
+                String cityName = binding.cityNameSpinner.getSelectedItem().toString();
+                getNeighborhoodsNames(cityName);
+            } break;
+        }
+    }
+
+    private void getNeighborhoodsNames(String cityName) {
+        for (Neighborhood neighborhood:neighborhoods){
+            if (neighborhood.getCity().equals(cityName)){
+                neighborhoodsNames.add(neighborhood.getNeighborhood());
+                neighborhoodsAdapter.notifyDataSetChanged();
+                break;
+            }
+        }
+    }
+
+    private void getCitiesNames(String governorateName) {
+        for (Neighborhood neighborhood:neighborhoods){
+            if (neighborhood.getGovernorate().equals(governorateName)){
+                citiesNames.add(neighborhood.getCity());
+                citiesAdapter.notifyDataSetChanged();
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }

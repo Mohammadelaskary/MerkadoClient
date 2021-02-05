@@ -69,57 +69,90 @@
             android:inputType="phone"/>
 
     </com.google.android.material.textfield.TextInputLayout>
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_10sdp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:hint="@string/governorate"
-        android:id="@+id/governorate"
-        app:boxCornerRadiusBottomEnd="@dimen/_10sdp"
-        app:boxCornerRadiusBottomStart="@dimen/_10sdp"
-        app:boxCornerRadiusTopEnd="@dimen/_10sdp"
-        app:boxCornerRadiusTopStart="@dimen/_10sdp">
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inputType="text"/>
-
-    </com.google.android.material.textfield.TextInputLayout>
-    <com.google.android.material.textfield.TextInputLayout
+        android:text="اختر المحافظة"
+        android:layout_gravity="start"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_3sdp"/>
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_10sdp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:hint="@string/city"
-        android:id="@+id/city"
-        app:boxCornerRadiusBottomEnd="@dimen/_10sdp"
-        app:boxCornerRadiusBottomStart="@dimen/_10sdp"
-        app:boxCornerRadiusTopEnd="@dimen/_10sdp"
-        app:boxCornerRadiusTopStart="@dimen/_10sdp">
-        <com.google.android.material.textfield.TextInputEditText
+        android:layout_height="wrap_content">
+        <Spinner
+            android:id="@+id/governorate_name_spinner"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inputType="text"/>
-
-    </com.google.android.material.textfield.TextInputLayout>
-    <com.google.android.material.textfield.TextInputLayout
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_10sdp"
+            />
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/governorate_names_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:progressBarStyleSmall"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:visibility="gone"
+            />
+    </RelativeLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="اختر المدينة"
+        android:layout_gravity="start"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_3sdp"/>
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_10sdp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:hint="@string/neighborhood"
-        android:id="@+id/neighborhood"
-        app:boxCornerRadiusBottomEnd="@dimen/_10sdp"
-        app:boxCornerRadiusBottomStart="@dimen/_10sdp"
-        app:boxCornerRadiusTopEnd="@dimen/_10sdp"
-        app:boxCornerRadiusTopStart="@dimen/_10sdp">
-        <com.google.android.material.textfield.TextInputEditText
+        android:layout_height="wrap_content">
+        <Spinner
+            android:id="@+id/city_name_spinner"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inputType="text"/>
-
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_10sdp"
+            />
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/get_cities_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:progressBarStyleSmall"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_centerVertical="true"
+            android:visibility="gone"
+            />
+    </RelativeLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="اختر الحي"
+        android:layout_gravity="start"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_3sdp"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Spinner
+            android:id="@+id/neighborhood_name_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_10sdp"
+            />
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/get_neighborhood_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:progressBarStyleSmall"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_centerVertical="true"
+            android:visibility="gone"
+            />
+    </RelativeLayout>
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

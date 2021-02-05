@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -29,6 +30,7 @@ import com.merkado.merkadoclient.R;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
 import com.merkado.merkadoclient.databinding.ActivityUserDataBinding;
 import com.google.firebase.auth.FirebaseAuth;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,12 +39,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
-public class UserData extends AppCompatActivity {
+public class UserData extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     ActivityUserDataBinding binding;
     HomeViewModel homeViewModel;
     User user;
-    List<String> neighborhoodsList = new ArrayList<>();
+    FirebaseDatabase database;
+    List<Neighborhood> neighborhoods = new ArrayList<>();
+    List<String> governoratesNames = new ArrayList<>();
+    List<String> citiesNames       = new ArrayList<>();
+    List<String> neighborhoodsNames = new ArrayList<>();
+    ArrayAdapter<String> governoratesAdapter;
+    ArrayAdapter<String> citiesAdapter;
     ArrayAdapter<String> neighborhoodsAdapter;
     String neighborhood,governorate, city,streetName,buildingNo,appartmentNo;
     boolean isGovernorateChanged = false;
@@ -59,7 +67,7 @@ public class UserData extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityUserDataBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        database = FirebaseDatabase.getInstance();
 
         try {
             initViewModel();
@@ -67,16 +75,59 @@ public class UserData extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        attachAdaptersToSpinners();
+        getNeighborhoods();
         getUserData();
-        getAllCities();
-        neighborhoodsList.add("اختر المدينة");
-        neighborhoodsAdapter = new ArrayAdapter<>(UserData.this, android.R.layout.simple_spinner_dropdown_item, neighborhoodsList);
-        binding.neighborhood.setAdapter(neighborhoodsAdapter);
+        setTextWatchers();
+        connectViewsToOnClick();
+
         MainActivity.dataBase.myDao().deleteAllShippingData();
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle("بيانات الطلب");
+    }
+    private void getNeighborhoods() {
+        binding.governorateNamesProgress.show();
+        homeViewModel.getNeighborhoodLiveData().observe(this,neighborhoods1 -> {
+            binding.governorateNamesProgress.hide();
+            neighborhoods.clear();
+            governoratesNames.clear();
+            neighborhoods.addAll(neighborhoods1);
+            for (Neighborhood neighborhood:neighborhoods){
+                if (!governoratesNames.contains(neighborhood.getGovernorate()))
+                    governoratesNames.add(neighborhood.getGovernorate());
+                governoratesAdapter.notifyDataSetChanged();
+                Log.d("gover",neighborhood.getGovernorate());
+                if (governorate!=null){
+                    binding.governorateNameSpinner.setSelection(governoratesAdapter.getPosition(governorate));
+                    getCitiesNames(governorate);
+                    getNeighborhoodsNames(city);
+                }
 
+
+            }
+            for (String governorate : governoratesNames)
+                Log.d("goverNames",governorate);
+        });
+    }
+
+
+    private void attachAdaptersToSpinners() {
+        governoratesAdapter  = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1,governoratesNames);
+        citiesAdapter        = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1,citiesNames);
+        neighborhoodsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1,neighborhoodsNames);
+        binding.governorateNameSpinner.setAdapter(governoratesAdapter);
+        binding.cityNameSpinner.setAdapter(citiesAdapter);
+        binding.neighborhoodNameSpinner.setAdapter(neighborhoodsAdapter);
+    }
+
+    private void connectViewsToOnClick() {
+        binding.summery.setOnClickListener(this);
+        binding.governorateNameSpinner.setOnItemSelectedListener(this);
+        binding.cityNameSpinner.setOnItemSelectedListener(this);
+    }
+
+    private void setTextWatchers() {
         Objects.requireNonNull(binding.username.getEditText()).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -117,29 +168,7 @@ public class UserData extends AppCompatActivity {
                     binding.mobileNumber.setError(null);
             }
         });
-        Objects.requireNonNull(binding.governorate.getEditText()).addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.governorate.setError(null);
-            }
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.governorate.setError(null);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                String governorate = binding.governorate.getEditText().getText().toString().trim();
-
-                if (governorate.isEmpty())
-                    binding.governorate.setError("من فضلك ادخل اسم المحافظة");
-                else{
-                    binding.governorate.setError(null);
-                    isGovernorateChanged = true;
-                }
-            }
-        });
 
         Objects.requireNonNull(binding.streetName.getEditText()).addTextChangedListener(new TextWatcher() {
             @Override
@@ -230,113 +259,7 @@ public class UserData extends AppCompatActivity {
                     }
                 });
 
-                binding.neighborhood.setOnItemSelectedListener(
-                        new AdapterView.OnItemSelectedListener() {
-                               @Override
-                               public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                   isNeighborhoodChanged = true;
-                               }
 
-                               @Override
-                               public void onNothingSelected(AdapterView<?> parent) {
-
-                               }
-                           });
-
-        binding.city.getEditText().addTextChangedListener(
-                new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        String city = binding.city.getEditText().getText().toString().trim();
-                        if (city.isEmpty())
-                            binding.city.setError("من فضلك ادخل اسم المدينة");
-                        else{
-                            binding.city.setError(null);
-                            isCityChanged = true;
-                        }
-                    }
-                });
-                        binding.summery.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                String username = binding.username.getEditText().getText().toString().trim();
-                                String phoneNumber = Objects.requireNonNull(binding.phoneNumber.getEditText()).getText().toString().trim();
-                                String mobileNumber = binding.mobileNumber.getEditText().getText().toString().trim();
-                                governorate = binding.governorate.getEditText().getText().toString().trim();
-                                streetName = binding.streetName.getEditText().getText().toString().trim();
-                                buildingNo = binding.buildingNo.getEditText().getText().toString().trim();
-                                appartmentNo = binding.appartmentNo.getEditText().getText().toString().trim();
-                                String promoCode = Objects.requireNonNull(binding.promoCode.getEditText()).getText().toString().trim();
-                                neighborhood = binding.neighborhood.getSelectedItem().toString();
-                                city = Objects.requireNonNull(binding.city.getEditText()).getText().toString().trim();
-                                String famousMark = binding.famousMark.getEditText().getText().toString().trim();
-                                if (username.isEmpty())
-                                    binding.username.setError("ادخل اسم العميل");
-                                if (mobileNumber.isEmpty())
-                                    binding.mobileNumber.setError("ادخل رقم المحمول");
-                                if (governorate.isEmpty())
-                                    binding.governorate.setError("ادخل المحافظة");
-                                if (city.isEmpty())
-                                    binding.city.setError("ادخل اسم الحي");
-                                if (streetName.isEmpty())
-                                    binding.streetName.setError("ادخل اسم الشارع/المنطقة");
-                                if (buildingNo.isEmpty())
-                                    binding.buildingNo.setError("ادخل رقم المنزل");
-                                if (appartmentNo.isEmpty())
-                                    binding.appartmentNo.setError("ادخل رقم الشقة");
-                                if (!username.isEmpty()
-                                        && !mobileNumber.isEmpty()
-                                        && !appartmentNo.isEmpty()
-                                        && !governorate.isEmpty()
-                                        && !city.isEmpty()
-                                        && !streetName.isEmpty()
-                                        && !buildingNo.isEmpty()) {
-                                    String address;
-                                    if (famousMark==null)
-                                        address = buildingNo + " " + streetName +" ، "+ city +" ، "+ city +" ، "+governorate+" شقة رقم "+ appartmentNo;
-                                    else
-                                        address = buildingNo + " " + streetName +" ، "+ city +" ، "+ city +" ، "+governorate+" بالقرب من "+famousMark+" شقة رقم "+ appartmentNo;
-                                    ShippingData shippingData = new ShippingData(username, mobileNumber, phoneNumber, address);
-                                    shippingData.setCity(city);
-                                    if (!famousMark.isEmpty())
-                                        shippingData.setFamousMark(famousMark);
-
-                                    if (isNeighborhoodChanged)
-                                        updateValue(neighborhood, "neighborhood ");
-                                    if (isAppartmentNoChanged)
-                                        updateValue(appartmentNo, "appartmentNo");
-                                    if (isBuildingNoChanged)
-                                        updateValue(buildingNo, "buildingNo");
-                                    if (isFamousMarkChanged)
-                                        updateValue(famousMark, "famousMark");
-                                    if (isGovernorateChanged)
-                                        updateValue(governorate, "governorate");
-                                    if (isStreetNameChanged)
-                                        updateValue(streetName, "streetName");
-                                    if (isCityChanged)
-                                        updateValue(city,"city");
-                                    MainActivity.dataBase.myDao().addShippingData(shippingData);
-                                    Intent intent1 = getIntent();
-                                    int subtractedPoints = intent1.getIntExtra("subtractedPoints", 0);
-                                    Intent intent = new Intent(UserData.this, OrderSent.class);
-                                    intent.putExtra("subtractedPoints", subtractedPoints);
-                                    if (!promoCode.isEmpty())
-                                        intent.putExtra("promoCode", promoCode);
-                                    startActivity(intent);
-                                    finish();
-                                }
-                            }
-                        });
 
     }
 
@@ -388,12 +311,15 @@ public class UserData extends AppCompatActivity {
                     Objects.requireNonNull(binding.phoneNumber.getEditText()).setText(phoneNumber);
                 city = user.getCity();
                 governorate = user.getGovernorate();
-                city = user.getNeighborhood();
+                city = user.getCity();
+                neighborhood = user.getNeighborhood();
                 streetName = user.getStreetName();
                 buildingNo = user.getBuildingNo();
                 appartmentNo = user.getAppartmentNo();
-                Objects.requireNonNull(binding.governorate.getEditText()).setText(governorate);
-                Objects.requireNonNull(binding.city.getEditText()).setText(city);
+                binding.governorateNameSpinner.setSelection(governoratesAdapter.getPosition(governorate));
+                binding.cityNameSpinner.setSelection(citiesAdapter.getPosition(city));
+                Log.d("neigh",neighborhood);
+                binding.neighborhoodNameSpinner.setSelection(neighborhoodsAdapter.getPosition(neighborhood));
                 Objects.requireNonNull(binding.streetName.getEditText()).setText(streetName);
                 Objects.requireNonNull(binding.buildingNo.getEditText()).setText(buildingNo);
                 Objects.requireNonNull(binding.appartmentNo.getEditText()).setText(appartmentNo);
@@ -419,50 +345,122 @@ public class UserData extends AppCompatActivity {
         }
     }
 
-
-    private void getAllCities() {
-        homeViewModel.getNeighborhoodLiveData().observe(this, new Observer<List<Neighborhood>>() {
-            @Override
-            public void onChanged(List<Neighborhood> neighborhoods) {
-                neighborhoodsList.clear();
-                for (Neighborhood neighborhood : neighborhoods) {
-                    neighborhoodsList.add(neighborhood.getNeighborhood());
-                }
+    private void getNeighborhoodsNames(String cityName) {
+        for (Neighborhood neighborhood:neighborhoods){
+            if (neighborhood.getCity().equals(cityName)&&!neighborhoodsNames.contains(neighborhood.getNeighborhood())){
+                neighborhoodsNames.add(neighborhood.getNeighborhood());
                 neighborhoodsAdapter.notifyDataSetChanged();
-                binding.neighborhoodLoading.hide();
-
-                if (neighborhoodsList.contains(city)) {
-                    int position = neighborhoodsAdapter.getPosition(city);
-                    binding.neighborhood.setSelection(position);
-                } else {
-                    new AlertDialog.Builder(UserData.this)
-                            .setMessage(getString(R.string.apologize))
-
-                            // Specifying a listener allows you to take an action before dismissing the dialog.
-                            // The dialog is automatically dismissed when a dialog button is clicked.
-                            .setPositiveButton("خروج", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                    Intent intent = new Intent(UserData.this, MainActivity.class);
-                                    intent.putExtra("cart", "");
-                                    startActivity(intent);
-                                    finish();
-                                }
-                            })
-                            .setNegativeButton("تغيير المدينة", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    dialogInterface.dismiss();
-                                }
-                            })
-
-                            // A null listener allows the button to dismiss the dialog and take no further action.
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
-                }
-
+                break;
             }
-        });
+        }
     }
 
+    private void getCitiesNames(String governorateName) {
+        for (Neighborhood neighborhood:neighborhoods){
+            if (neighborhood.getGovernorate().equals(governorateName)&&!citiesNames.contains(neighborhood.getCity())){
+                citiesNames.add(neighborhood.getCity());
+                citiesAdapter.notifyDataSetChanged();
+                break;
+            }
+        }
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.summery:{
+                String username = binding.username.getEditText().getText().toString().trim();
+                String phoneNumber = Objects.requireNonNull(binding.phoneNumber.getEditText()).getText().toString().trim();
+                String mobileNumber = binding.mobileNumber.getEditText().getText().toString().trim();
+                governorate = binding.governorateNameSpinner.getSelectedItem().toString();
+                streetName = binding.streetName.getEditText().getText().toString().trim();
+                buildingNo = binding.buildingNo.getEditText().getText().toString().trim();
+                appartmentNo = binding.appartmentNo.getEditText().getText().toString().trim();
+                String promoCode = Objects.requireNonNull(binding.promoCode.getEditText()).getText().toString().trim();
+                neighborhood = binding.neighborhoodNameSpinner.getSelectedItem().toString();
+                city = binding.cityNameSpinner.getSelectedItem().toString();
+                String famousMark = binding.famousMark.getEditText().getText().toString().trim();
+                if (username.isEmpty())
+                    binding.username.setError("ادخل اسم العميل");
+                if (mobileNumber.isEmpty())
+                    binding.mobileNumber.setError("ادخل رقم المحمول");
+                if (streetName.isEmpty())
+                    binding.streetName.setError("ادخل اسم الشارع/المنطقة");
+                if (buildingNo.isEmpty())
+                    binding.buildingNo.setError("ادخل رقم المنزل");
+                if (appartmentNo.isEmpty())
+                    binding.appartmentNo.setError("ادخل رقم الشقة");
+                if (!username.isEmpty()
+                        && !mobileNumber.isEmpty()
+                        && !appartmentNo.isEmpty()
+                        && !governorate.isEmpty()
+                        && !city.isEmpty()
+                        && !streetName.isEmpty()
+                        && !buildingNo.isEmpty()) {
+                    String address;
+                    if (famousMark==null)
+                        address = buildingNo + " " + streetName +" ، "+ city +" ، "+ city +" ، "+governorate+" شقة رقم "+ appartmentNo;
+                    else
+                        address = buildingNo + " " + streetName +" ، "+ city +" ، "+ city +" ، "+governorate+" بالقرب من "+famousMark+" شقة رقم "+ appartmentNo;
+                    ShippingData shippingData = new ShippingData(username, mobileNumber, phoneNumber, address);
+                    shippingData.setCity(city);
+                    if (!famousMark.isEmpty())
+                        shippingData.setFamousMark(famousMark);
+
+                    if (isNeighborhoodChanged)
+                        updateValue(neighborhood, "neighborhood ");
+                    if (isAppartmentNoChanged)
+                        updateValue(appartmentNo, "appartmentNo");
+                    if (isBuildingNoChanged)
+                        updateValue(buildingNo, "buildingNo");
+                    if (isFamousMarkChanged)
+                        updateValue(famousMark, "famousMark");
+                    if (isGovernorateChanged)
+                        updateValue(governorate, "governorate");
+                    if (isStreetNameChanged)
+                        updateValue(streetName, "streetName");
+                    if (isCityChanged)
+                        updateValue(city,"city");
+                    MainActivity.dataBase.myDao().addShippingData(shippingData);
+                    Intent intent1 = getIntent();
+                    int subtractedPoints = intent1.getIntExtra("subtractedPoints", 0);
+                    Intent intent = new Intent(UserData.this, OrderSent.class);
+                    intent.putExtra("subtractedPoints", subtractedPoints);
+                    if (!promoCode.isEmpty())
+                        intent.putExtra("promoCode", promoCode);
+                    startActivity(intent);
+                    finish();
+                }
+            } break;
+        }
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        switch (view.getId()){
+            case R.id.governorate_name_spinner:{
+                String governorateName = binding.governorateNameSpinner.getSelectedItem().toString();
+                getCitiesNames(governorateName);
+                getNeighborhoodsNames(citiesNames.get(0));
+                isCityChanged = true;
+                isGovernorateChanged = true;
+                isNeighborhoodChanged = true;
+            } break;
+            case R.id.city_name_spinner:{
+                String city = binding.cityNameSpinner.getSelectedItem().toString();
+                getNeighborhoodsNames(city);
+                isCityChanged = true;
+                isNeighborhoodChanged = true;
+            } break;
+            case R.id.neighborhood_name_spinner:{
+                isNeighborhoodChanged = true;
+            } break;
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
 }
