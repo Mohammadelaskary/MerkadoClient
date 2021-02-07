@@ -243,10 +243,10 @@ public class OrderSent extends AppCompatActivity {
 
                 String userCity = shippingData.get(shippingData.size() - 1).getCity();
                 Log.d("orderSent neighborhood", "onCreate: " + userCity);
-                if (!neighborhoodsList.contains(userCity)) {
-                    binding.apologize.setVisibility(View.VISIBLE);
-                    binding.orderSent.setVisibility(View.GONE);
-                } else {
+//                if (!neighborhoodsList.contains(userCity)) {
+//                    binding.apologize.setVisibility(View.VISIBLE);
+//                    binding.orderSent.setVisibility(View.GONE);
+//                } else {
                     binding.apologize.setVisibility(View.GONE);
                     binding.orderSent.setVisibility(View.VISIBLE);
                     boolean promoCodeUsedBefore = allSerials.contains(getSerialNumber());
@@ -292,7 +292,7 @@ public class OrderSent extends AppCompatActivity {
                     fullOrder.setId(id);
                     uploadOrder(fullOrder);
                 }
-            }
+//            }
         });
     }
 

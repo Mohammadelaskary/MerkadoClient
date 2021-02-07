@@ -399,21 +399,21 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void getNeighborhoodsNames(String cityName) {
+        neighborhoodsNames.clear();
         for (Neighborhood neighborhood:neighborhoods){
             if (neighborhood.getCity().equals(cityName)){
                 neighborhoodsNames.add(neighborhood.getNeighborhood());
                 neighborhoodsAdapter.notifyDataSetChanged();
-                break;
             }
         }
     }
 
     private void getCitiesNames(String governorateName) {
+        citiesNames.clear();
         for (Neighborhood neighborhood:neighborhoods){
             if (neighborhood.getGovernorate().equals(governorateName)){
                 citiesNames.add(neighborhood.getCity());
                 citiesAdapter.notifyDataSetChanged();
-                break;
             }
         }
     }

@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -41,6 +42,7 @@ import java.util.concurrent.ExecutionException;
 
 public class UserData extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
+    private static final String TAG = "Userdata";
     ActivityUserDataBinding binding;
     HomeViewModel homeViewModel;
     User user;
@@ -85,6 +87,49 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle("بيانات الطلب");
+
+        binding.governorateNameSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String governorateName = binding.governorateNameSpinner.getSelectedItem().toString();
+                Toast.makeText(UserData.this, governorateName+"selected", Toast.LENGTH_SHORT).show();
+                getCitiesNames(governorateName);
+                getNeighborhoodsNames(citiesNames.get(0));
+                isCityChanged = true;
+                isGovernorateChanged = true;
+                isNeighborhoodChanged = true;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        binding.cityNameSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String city = binding.cityNameSpinner.getSelectedItem().toString();
+                getNeighborhoodsNames(city);
+                isCityChanged = true;
+                isNeighborhoodChanged = true;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        binding.neighborhoodNameSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                isNeighborhoodChanged = true;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
     private void getNeighborhoods() {
         binding.governorateNamesProgress.show();
@@ -93,7 +138,13 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
             neighborhoods.clear();
             governoratesNames.clear();
             neighborhoods.addAll(neighborhoods1);
+
+
+
             for (Neighborhood neighborhood:neighborhoods){
+                Log.d("neiGov",neighborhood.getGovernorate());
+                Log.d("neicity",neighborhood.getCity());
+                Log.d("neinei",neighborhood.getNeighborhood());
                 if (!governoratesNames.contains(neighborhood.getGovernorate()))
                     governoratesNames.add(neighborhood.getGovernorate());
                 governoratesAdapter.notifyDataSetChanged();
@@ -113,9 +164,9 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
 
 
     private void attachAdaptersToSpinners() {
-        governoratesAdapter  = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1,governoratesNames);
-        citiesAdapter        = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1,citiesNames);
-        neighborhoodsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1,neighborhoodsNames);
+        governoratesAdapter  = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,governoratesNames);
+        citiesAdapter        = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,citiesNames);
+        neighborhoodsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,neighborhoodsNames);
         binding.governorateNameSpinner.setAdapter(governoratesAdapter);
         binding.cityNameSpinner.setAdapter(citiesAdapter);
         binding.neighborhoodNameSpinner.setAdapter(neighborhoodsAdapter);
@@ -123,8 +174,9 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
 
     private void connectViewsToOnClick() {
         binding.summery.setOnClickListener(this);
-        binding.governorateNameSpinner.setOnItemSelectedListener(this);
-        binding.cityNameSpinner.setOnItemSelectedListener(this);
+//        binding.governorateNameSpinner.setOnItemSelectedListener(this);
+//        binding.cityNameSpinner.setOnItemSelectedListener(this);
+//        binding.neighborhoodNameSpinner.setOnItemSelectedListener(this);
     }
 
     private void setTextWatchers() {
@@ -346,21 +398,22 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
     }
 
     private void getNeighborhoodsNames(String cityName) {
+        neighborhoodsNames.clear();
         for (Neighborhood neighborhood:neighborhoods){
             if (neighborhood.getCity().equals(cityName)&&!neighborhoodsNames.contains(neighborhood.getNeighborhood())){
                 neighborhoodsNames.add(neighborhood.getNeighborhood());
                 neighborhoodsAdapter.notifyDataSetChanged();
-                break;
             }
         }
     }
 
     private void getCitiesNames(String governorateName) {
+        citiesNames.clear();
         for (Neighborhood neighborhood:neighborhoods){
             if (neighborhood.getGovernorate().equals(governorateName)&&!citiesNames.contains(neighborhood.getCity())){
                 citiesNames.add(neighborhood.getCity());
+                Log.d(TAG, "getCitiesNames: "+neighborhood.getCity());
                 citiesAdapter.notifyDataSetChanged();
-                break;
             }
         }
     }
@@ -441,6 +494,7 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
         switch (view.getId()){
             case R.id.governorate_name_spinner:{
                 String governorateName = binding.governorateNameSpinner.getSelectedItem().toString();
+                Toast.makeText(this, governorateName+"selected", Toast.LENGTH_SHORT).show();
                 getCitiesNames(governorateName);
                 getNeighborhoodsNames(citiesNames.get(0));
                 isCityChanged = true;

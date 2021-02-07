@@ -111,35 +111,21 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
                 cancelOrder(id,position);
             }
         });
-//        if(newOrder){
-//            holder.delete.setVisibility(View.GONE);
-//        }else {
-//            holder.delete.setVisibility(View.VISIBLE);
-//        }
+        if(newOrder){
+            holder.cancelOrder.setVisibility(View.VISIBLE);
+        }else {
+            holder.cancelOrder.setVisibility(View.GONE);
+        }
 
-//        holder.delete.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-//                Query query = ref.child("Done orders").orderByChild("id").equalTo(ordersList.get(position).getId());
-//                query.addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                        for (DataSnapshot snapshot:dataSnapshot.getChildren()) {
-//                            snapshot.getRef().removeValue();
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                    }
-//                });
-//
-//
-//
-//            }
-//        });
+        holder.cancelOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               cancelOrder(id,position);
+
+
+
+            }
+        });
 
 
     }
