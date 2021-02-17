@@ -132,6 +132,7 @@ public class ProductsActivity extends AppCompatActivity {
         super.onBackPressed();
         Intent intent = new Intent(ProductsActivity.this, MainActivity.class);
         intent.putExtra("cart", "");
+        intent.putExtra("dep",depName);
         startActivity(intent);
         finish();
     }

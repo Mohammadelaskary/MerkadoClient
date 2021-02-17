@@ -83,7 +83,7 @@ public class SubDepFragment extends Fragment {
             }
         });
         subDepRecycler.setAdapter(adapter);
-        subDepRecycler.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        subDepRecycler.setLayoutManager(new GridLayoutManager(getContext(), 2));
         subDepRecycler.setHasFixedSize(true);
     }
 

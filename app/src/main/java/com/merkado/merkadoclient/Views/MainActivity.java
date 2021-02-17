@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();
         initMain();
         String cart = intent.getStringExtra("cart");
+        String depName = intent.getStringExtra("depName");
         Log.d(TAG, "onCreate: " + cart);
         assert cart != null;
         if (cart.equals("cart")) {
@@ -131,6 +132,10 @@ public class MainActivity extends AppCompatActivity {
                 switchToLoginFragment();
             }
         }
+        if (!depName.isEmpty()) {
+                binding.bottomNav.setSelectedItemId(DEPS_ID);
+                switchToDepartmentsFragment();
+           }
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle("");
         try {

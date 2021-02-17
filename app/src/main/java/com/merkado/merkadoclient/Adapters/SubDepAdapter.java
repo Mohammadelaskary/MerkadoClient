@@ -1,10 +1,13 @@
 package com.merkado.merkadoclient.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,10 +15,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.merkado.merkadoclient.Fragments.ProductsFragment;
 import com.merkado.merkadoclient.Interfaces.SubDepInterface;
 import com.merkado.merkadoclient.Model.SubDeparment;
 import com.merkado.merkadoclient.R;
+import com.merkado.merkadoclient.Views.ProductsActivity;
 
 import java.util.List;
 
@@ -41,17 +46,29 @@ public class SubDepAdapter extends RecyclerView.Adapter<SubDepAdapter.SubDepView
 
     @Override
     public void onBindViewHolder(@NonNull SubDepViewHolder holder, int position) {
-        SubDeparment subDeparment = subDeparments.get(position);
-        String subDepName = subDeparment.getSubdepName();
-        holder.subDepText.setText(subDepName);
-        holder.subDepButton.setOnClickListener(new View.OnClickListener() {
+        String subdepName = subDeparments.get(position).getDepName();
+        String imageUrl = subDeparments.get(position).getImageUrl();
+        int discount = subDeparments.get(position).getDiscount();
+        String discountUnit = subDeparments.get(position).getDiscount_unit();
+        holder.subDepName.setText(subdepName);
+        if (!imageUrl.isEmpty())
+            Glide.with(context).load(imageUrl).into(holder.subdepBackground);
+        if (discount==0){
+            holder.subdepDiscountLayout.setVisibility(View.GONE);
+        } else {
+            String discountText = "حتي" + "\n" + discount +" "+ discountUnit+"\n"+"خصم";
+            holder.subdepDiscountLayout.setVisibility(View.VISIBLE);
+            holder.discountTextView.setText(discountText);
+        }
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onClickListener.onItemClicked(subDeparment);
+                Intent intent = new Intent(context, ProductsActivity.class);
+                intent.putExtra("depName",depName);
+                intent.putExtra("subdep",subdepName);
+                context.startActivity(intent);
             }
         });
-
-
     }
 
     @Override
@@ -60,13 +77,16 @@ public class SubDepAdapter extends RecyclerView.Adapter<SubDepAdapter.SubDepView
     }
 
     static class SubDepViewHolder extends RecyclerView.ViewHolder {
-        TextView subDepText;
-        LinearLayout subDepButton;
+        TextView subDepName,discountTextView;
+        RelativeLayout subdepDiscountLayout;
+        ImageView subdepBackground;
 
         public SubDepViewHolder(@NonNull View itemView) {
             super(itemView);
-            subDepText = itemView.findViewById(R.id.subdep_name);
-            subDepButton = itemView.findViewById(R.id.subdep_button);
+            subDepName = itemView.findViewById(R.id.subdep_name);
+            discountTextView = itemView.findViewById(R.id.subdep_discount);
+            subdepDiscountLayout = itemView.findViewById(R.id.discount_layout);
+            subdepBackground = itemView.findViewById(R.id.subdep_background);
         }
     }
 
