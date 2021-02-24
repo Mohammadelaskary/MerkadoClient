@@ -2,6 +2,7 @@ package com.merkado.merkadoclient.Views;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -50,6 +51,8 @@ public class ProductsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         depName = intent.getStringExtra("depName");
         subdep = intent.getStringExtra("subdep");
+        Log.d("depName",depName);
+        Log.d("subdepName",subdep);
         binding.depName.setText(depName);
         binding.subdepName.setText(subdep);
         binding.bigLogo.setOnClickListener(new View.OnClickListener() {
@@ -130,10 +133,6 @@ public class ProductsActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Intent intent = new Intent(ProductsActivity.this, MainActivity.class);
-        intent.putExtra("cart", "");
-        intent.putExtra("dep",depName);
-        startActivity(intent);
-        finish();
+        
     }
 }

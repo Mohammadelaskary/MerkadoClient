@@ -27,8 +27,10 @@ public class HomeViewModel extends ViewModel {
     private MutableLiveData<List<AdImages>> adImages;
     private MutableLiveData<Boolean> adImagesFinishLoading;
     private MutableLiveData<OverTotalMoneyDiscount> discountMutableLiveData;
-    private MutableLiveData<PointsDiscount> pointsDiscountMutableLiveData;
-    private MutableLiveData<Boolean> ispointsDiscountExist;
+    private MutableLiveData<PointsDiscount> pointsDiscountMutableLiveData1;
+    private MutableLiveData<Boolean> ispointsDiscountExist1;
+    private MutableLiveData<PointsDiscount> pointsDiscountMutableLiveData2;
+    private MutableLiveData<Boolean> ispointsDiscountExist2;
     private MutableLiveData<Boolean> specialOfferFinishLoading;
     private MutableLiveData<List<DepartmentNames>> depNamesLiveData;
     private MutableLiveData<List<SubDeparment>> subDepsLiveData;
@@ -56,14 +58,18 @@ public class HomeViewModel extends ViewModel {
         return allSerialsLiveData;
     }
 
-    public LiveData<PointsDiscount> getPointsDiscountMutableLiveData() {
-        return pointsDiscountMutableLiveData;
+    public LiveData<PointsDiscount> getPointsDiscountMutableLiveData1() {
+        return pointsDiscountMutableLiveData1;
     }
-
-    public LiveData<Boolean> getIspointsDiscountExist() {
-        return ispointsDiscountExist;
+    public LiveData<PointsDiscount> getPointsDiscountMutableLiveData2() {
+        return pointsDiscountMutableLiveData2;
     }
-
+    public LiveData<Boolean> getIspointsDiscountExist1() {
+        return ispointsDiscountExist1;
+    }
+    public LiveData<Boolean> getIspointsDiscountExist2() {
+        return ispointsDiscountExist2;
+    }
     public LiveData<Boolean> getPreOrdersFinishLoading() {
         return preOrdersFinishLoading;
     }
@@ -174,9 +180,13 @@ public class HomeViewModel extends ViewModel {
             return;
         if (preOrdersFinishLoading != null)
             return;
-        if (pointsDiscountMutableLiveData != null)
+        if (pointsDiscountMutableLiveData1 != null)
             return;
-        if (ispointsDiscountExist != null)
+        if (ispointsDiscountExist1 != null)
+            return;
+        if (pointsDiscountMutableLiveData2 != null)
+            return;
+        if (ispointsDiscountExist2 != null)
             return;
         if (allSerialsLiveData != null)
             return;
@@ -202,8 +212,10 @@ public class HomeViewModel extends ViewModel {
         allPreOrdersLiveData = mRepository.getAllPreOrders();
         currentOrdersFinishLoading = mRepository.getCurrentOrdersFinishLoading();
         preOrdersFinishLoading = mRepository.getPreOrdersFinishLoading();
-        pointsDiscountMutableLiveData = mRepository.getPointsDiscount();
-        ispointsDiscountExist = mRepository.getPointsDiscountExist();
+        pointsDiscountMutableLiveData1 = mRepository.getPointsDiscount1();
+        ispointsDiscountExist1 = mRepository.getPointsDiscountExist1();
+        pointsDiscountMutableLiveData2 = mRepository.getPointsDiscount2();
+        ispointsDiscountExist2 = mRepository.getPointsDiscountExist2();
         allSerialsLiveData = mRepository.getAllSerials();
         getPhoneNumber = mRepository.getContactNumber();
         allUsersFinishLoading = mRepository.getAllUsersFinishedLoading();

@@ -102,7 +102,8 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 for (DataSnapshot dataSnapshot:snapshot.getChildren()){
                     Neighborhood neighborhood = dataSnapshot.getValue(Neighborhood.class);
                     neighborhoods.add(neighborhood);
-                    governoratesNames.add(neighborhood.getGovernorate());
+                    if (!governoratesNames.contains(neighborhood.getGovernorate()))
+                        governoratesNames.add(neighborhood.getGovernorate());
                     governoratesAdapter.notifyDataSetChanged();
 
                 }
@@ -411,7 +412,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     private void getCitiesNames(String governorateName) {
         citiesNames.clear();
         for (Neighborhood neighborhood:neighborhoods){
-            if (neighborhood.getGovernorate().equals(governorateName)){
+            if (neighborhood.getGovernorate().equals(governorateName)&&!citiesNames.contains(neighborhood.getCity())){
                 citiesNames.add(neighborhood.getCity());
                 citiesAdapter.notifyDataSetChanged();
             }

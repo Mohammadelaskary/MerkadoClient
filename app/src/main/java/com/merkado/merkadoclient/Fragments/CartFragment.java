@@ -58,24 +58,28 @@ public class CartFragment extends Fragment {
 
     Context context;
     RecyclerView cartRec;
-    TextView sum, discount, overAllDiscountTextView, shipping, total, noConnection, useYourPoints;
-    LinearLayout discountOptions;
+    TextView sum, discount, overAllDiscountTextView, shipping, total, noConnection, useYourPoints1,useYourPoints2;
     HomeViewModel homeViewModel;
     List<ProductOrder> orders = new ArrayList<>();
     List<Product> allProducts = new ArrayList<>();
     List<Cart> productInCart = new ArrayList<>();
     ProductOrdersAdapter productOrdersAdapter;
     OverTotalMoneyDiscount overAllDiscount;
-    MaterialButton getFreeShipping, getDiscount;
-    boolean isPointsDiscountExist;
+    MaterialButton discount_option1,discount_option2;
+
+    LinearLayout redeemDiscount,discountOptions1,discountOptions2;
+    boolean isPointsDiscountExist1;
+    boolean isPointsDiscountExist2;
     Shipping shippingFee;
     RelativeLayout cartLayout;
     CoordinatorLayout fullLayout;
     MaterialButton complete;
     ShimmerFrameLayout shimmerFrameLayout;
-    int minPoints;
+    int minPoints,minPoints2;
     boolean freeShipping = false;
     boolean freeShippingUsed = false;
+    boolean pointsFreeShipping1 = false;
+    boolean pointsFreeShipping2 = false;
     float sumValue = 0;
     float discountValue = 0;
     float overAllDiscountValue = 0;
@@ -83,6 +87,7 @@ public class CartFragment extends Fragment {
     float shippingValue = 10;
     float defaultPointsDiscountValue = 0;
     float pointsDiscountValue = 0;
+    float pointsDiscountValue2 = 0;
     boolean isClicked = false;
     int subtractedPoints = 0;
     List<User> allUsers = new ArrayList<>();
@@ -120,10 +125,13 @@ public class CartFragment extends Fragment {
         fullLayout = view.findViewById(R.id.full_layout);
         complete = view.findViewById(R.id.complete);
         shimmerFrameLayout = view.findViewById(R.id.shimmer_product_order);
-        useYourPoints = view.findViewById(R.id.use_your_points);
-        discountOptions = view.findViewById(R.id.discount_options);
-        getFreeShipping = view.findViewById(R.id.free_shipping);
-        getDiscount = view.findViewById(R.id.discount_value);
+        useYourPoints1 = view.findViewById(R.id.use_your_points1);
+        useYourPoints2 = view.findViewById(R.id.use_your_points2);
+        redeemDiscount = view.findViewById(R.id.points_redeem);
+        discountOptions1 = view.findViewById(R.id.discount_options1);
+        discountOptions2 = view.findViewById(R.id.discount_options2);
+        discount_option1 = view.findViewById(R.id.discount_option1);
+        discount_option2 = view.findViewById(R.id.discount_option2);
         MainActivity.dataBase.myDao().deleteAllOrders();
         MainActivity.dataBase.myDao().deleteAllOrderCost();
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
@@ -196,13 +204,10 @@ public class CartFragment extends Fragment {
             initProductsRec();
             getOverTotalMoneyDiscount();
             getShippingFee();
-            getPointsDiscountExist();
+            getPointsDiscount1();
+            getPointsDiscount2();
             getAllUsers();
-            if (isPointsDiscountExist) {
-                useYourPoints.setVisibility(View.VISIBLE);
-                discountOptions.setVisibility(View.VISIBLE);
-                getPointsDiscount();
-            }
+
             shimmerFrameLayout.startShimmer();
             shimmerFrameLayout.setVisibility(View.VISIBLE);
         } else {
@@ -213,28 +218,9 @@ public class CartFragment extends Fragment {
 
         }
 
-        getFreeShipping.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (myPoints < minPoints) {
-                    FancyToast.makeText(getContext(), "يجب أن يكون لديك " + minPoints + " للحصول على الخصم", FancyToast.LENGTH_SHORT, FancyToast.INFO, false).show();
-                } else {
-                    if (isClicked)
-                        FancyToast.makeText(getContext(), "لا يمكنك استخدام الخصم أكثر من مرة", FancyToast.LENGTH_SHORT, FancyToast.WARNING, false).show();
-                    else {
-                        subtractedPoints = minPoints;
 
-                        freeShippingUsed = freeShipping;
-                        getFreeShipping.setEnabled(false);
-                        getDiscount.setEnabled(false);
-                        calculateCosts();
-                        isClicked = true;
-                    }
-                }
-            }
-        });
 
-        getDiscount.setOnClickListener(new View.OnClickListener() {
+        discount_option1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (myPoints < minPoints) {
@@ -243,11 +229,37 @@ public class CartFragment extends Fragment {
                     if (isClicked) {
                         FancyToast.makeText(getContext(), "لا يمكنك استخدام الخصم أكثر من مرة", FancyToast.LENGTH_SHORT, FancyToast.WARNING, false).show();
                     } else {
-                        defaultPointsDiscountValue = pointsDiscountValue;
-                        getFreeShipping.setEnabled(false);
-                        getDiscount.setEnabled(false);
+                        if (pointsFreeShipping1){
+                            freeShipping = pointsFreeShipping2;
+                        } else {
+                            defaultPointsDiscountValue = pointsDiscountValue;
+                        }
                         subtractedPoints = minPoints;
+                        redeemDiscount.setEnabled(false);
+                        calculateCosts();
+                        isClicked = true;
+                    }
+                }
+            }
+        });
+        discount_option2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (myPoints < minPoints) {
+                    FancyToast.makeText(getContext(), "يجب أن يكون لديك " + minPoints + " للحصول على الخصم", FancyToast.LENGTH_SHORT, FancyToast.INFO, false).show();
+                } else {
+                    if (isClicked) {
+                        FancyToast.makeText(getContext(), "لا يمكنك استخدام الخصم أكثر من مرة", FancyToast.LENGTH_SHORT, FancyToast.WARNING, false).show();
+                    } else {
+                        if (pointsFreeShipping2){
+                            freeShipping = pointsFreeShipping2;
+                        } else {
 
+                            defaultPointsDiscountValue = pointsDiscountValue2;
+
+                        }
+                        subtractedPoints = minPoints;
+                       redeemDiscount.setEnabled(false);
                         calculateCosts();
                         isClicked = true;
                     }
@@ -258,35 +270,99 @@ public class CartFragment extends Fragment {
         return view;
     }
 
-    private void getPointsDiscount() {
-        homeViewModel.getPointsDiscountMutableLiveData().observe(Objects.requireNonNull(getActivity()),
+    private void getPointsDiscount1() {
+        homeViewModel.getPointsDiscountMutableLiveData1().observe(Objects.requireNonNull(getActivity()),
                 pointsDiscount -> {
-                    freeShipping = pointsDiscount.isFreeShipping();
+                if (pointsDiscount != null) {
+                    pointsFreeShipping1 = pointsDiscount.isFreeShipping();
                     minPoints = pointsDiscount.getNumberOfPoints();
-
                     pointsDiscountValue = pointsDiscount.getDiscountValue();
-                    if (!freeShipping)
-                        getFreeShipping.setVisibility(View.GONE);
-                    if (pointsDiscountValue == 0)
-                        getDiscount.setVisibility(View.GONE);
-                    if (myPoints < minPoints) {
-                        getFreeShipping.setEnabled(false);
-                        getDiscount.setEnabled(false);
-                    }
-                    String discountText = "خصم " + pointsDiscountValue + " جنيه";
-                    getDiscount.setText(discountText);
-                });
-    }
+                    discountOptions1.setVisibility(View.VISIBLE);
+                    Log.d("pointsShipping", pointsFreeShipping1 + "");
+                    Log.d("pointsShipping", minPoints + "");
+                    Log.d("pointsShipping", pointsDiscountValue + "");
+                    String title = "استخدم " + minPoints + " نقاط للحصول على:";
+                    useYourPoints1.setText(title);
 
-    private void getPointsDiscountExist() {
-        homeViewModel.getIspointsDiscountExist().observe(Objects.requireNonNull(getActivity()),
-                new Observer<Boolean>() {
-                    @Override
-                    public void onChanged(Boolean aBoolean) {
-                        isPointsDiscountExist = aBoolean;
+                    if (!pointsFreeShipping1) {
+                        String discountText = "خصم " + pointsDiscountValue + " جنيه";
+                        discount_option1.setText(discountText);
+                    } else {
+                        discount_option1.setText("شحن مجاني");
                     }
+                    if (minPoints == 0)
+                        discountOptions1.setVisibility(View.GONE);
+                    if (myPoints < minPoints) {
+                        discount_option1.setEnabled(false);
+                    }
+                } else
+                    discountOptions1.setVisibility(View.GONE);
                 });
     }
+    private void getPointsDiscount2() {
+        homeViewModel.getPointsDiscountMutableLiveData2().observe(Objects.requireNonNull(getActivity()),
+                pointsDiscount -> {
+                    if (pointsDiscount != null) {
+                        pointsFreeShipping2 = pointsDiscount.isFreeShipping();
+                        minPoints2 = pointsDiscount.getNumberOfPoints();
+                        pointsDiscountValue2 = pointsDiscount.getDiscountValue();
+                        discountOptions2.setVisibility(View.VISIBLE);
+                        Log.d("pointsShipping", pointsFreeShipping1 + "");
+                        Log.d("pointsShipping", minPoints + "");
+                        Log.d("pointsShipping", pointsDiscountValue + "");
+                        String title = "استخدم " + minPoints2 + " نقاط للحصول على:";
+                        useYourPoints2.setText(title);
+
+                        if (!pointsFreeShipping2) {
+                            String discountText = "خصم " + pointsDiscountValue2 + " جنيه";
+                            discount_option2.setText(discountText);
+                        } else {
+                            discount_option2.setText("شحن مجاني");
+                        }
+                        if (minPoints == 0)
+                            discountOptions2.setVisibility(View.GONE);
+                        if (myPoints < minPoints2) {
+                            discount_option2.setEnabled(false);
+                        }
+                    } else
+                        discountOptions2.setVisibility(View.GONE);
+                });
+    }
+//    private void getPointsDiscountExist1() {
+//        homeViewModel.getIspointsDiscountExist1().observe(Objects.requireNonNull(getActivity()),
+//                new Observer<Boolean>() {
+//                    @Override
+//                    public void onChanged(Boolean aBoolean) {
+//                        isPointsDiscountExist1 = aBoolean;
+//
+//                    }
+//                });
+//    }
+//    private void getPointsDiscountExist2() {
+//        homeViewModel.getIspointsDiscountExist2().observe(Objects.requireNonNull(getActivity()),
+//                new Observer<Boolean>() {
+//                    @Override
+//                    public void onChanged(Boolean aBoolean) {
+//                        isPointsDiscountExist2 = aBoolean;
+//                        Log.d("pointsDiscount1",isPointsDiscountExist1+"");
+//                        Log.d("pointsDiscount2",isPointsDiscountExist2+"");
+//                        if (isPointsDiscountExist1||isPointsDiscountExist2)
+//                            redeemDiscount.setVisibility(View.VISIBLE);
+//                        else
+//                            redeemDiscount.setVisibility(View.GONE);
+//                        if (isPointsDiscountExist1) {
+//                            discountOptions1.setVisibility(View.VISIBLE);
+//                            getPointsDiscount1();
+//                        } else
+//                            discountOptions1.setVisibility(View.GONE);
+//                        if (isPointsDiscountExist2) {
+//                            discountOptions2.setVisibility(View.VISIBLE);
+//                            getPointsDiscount2();
+//                        } else
+//                            discountOptions2.setVisibility(View.GONE);
+//                    }
+//                });
+//    }
 
     private void initProductsRec() {
         productOrdersAdapter = new ProductOrdersAdapter(getContext(), orders);
@@ -467,6 +543,8 @@ public class CartFragment extends Fragment {
                 overAllDiscountTextView.setText("- " + overAllDiscountValue);
             }
             totalCostValue = totalCostValue + shippingValue - overAllDiscountValue - defaultPointsDiscountValue;
+            if (totalCostValue<=0)
+                totalCostValue = 0 ;
             total.setText(String.valueOf(totalCostValue));
 
         } else {

@@ -23,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.merkado.merkadoclient.Database.ProductOrder;
+import com.merkado.merkadoclient.Model.CanceledOrder;
 import com.merkado.merkadoclient.Model.FullOrder;
 import com.merkado.merkadoclient.R;
 import com.kofigyan.stateprogressbar.StateProgressBar;
@@ -108,7 +109,11 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
         holder.cancelOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cancelOrder(id,position);
+                if (!isShiped) {
+                    cancelOrder(id, position);
+                    pushNotication(customerName);
+                }else
+                    FancyToast.makeText(context,"لا يمكنك إلغاء الطلب في مرحلة التوصيل!!",FancyToast.LENGTH_LONG,FancyToast.ERROR,false).show();
             }
         });
         if(newOrder){
@@ -117,17 +122,15 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
             holder.cancelOrder.setVisibility(View.GONE);
         }
 
-        holder.cancelOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-               cancelOrder(id,position);
 
 
 
-            }
-        });
+    }
 
-
+    private void pushNotication(String customerName) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("CanceledOrder");
+        CanceledOrder canceledOrder = new CanceledOrder(customerName);
+        reference.push().setValue(canceledOrder);
     }
 
     private void cancelOrder(String id,int position) {

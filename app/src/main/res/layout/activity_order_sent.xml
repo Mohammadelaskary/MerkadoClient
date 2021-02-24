@@ -58,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_7sdp"
-            android:text="مواعيد العمل من 10.00 ص إلى 10.00 م"
+            android:text="مواعيد العمل من 10.00 ص إلى 12.00 م"
             android:id="@+id/work_dates"
             android:textSize="@dimen/_20sdp"
             android:gravity="center"

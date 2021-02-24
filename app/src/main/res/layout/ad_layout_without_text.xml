@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="@dimen/_100sdp"
+    android:layout_height="@dimen/_120sdp"
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardCornerRadius="@dimen/_5sdp"
@@ -13,7 +13,7 @@
             android:layout_height="match_parent"
             android:id="@+id/ad_image"
             android:src="@drawable/put_your_ad_here"
-            android:scaleType="centerCrop"
+            android:scaleType="center"
             />
 
 

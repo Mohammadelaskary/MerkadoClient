@@ -39,17 +39,20 @@ public class Repository {
     private final MutableLiveData<Integer> numberOfProductsInCart = new MutableLiveData<>();
     private final MutableLiveData<Boolean> currentOrdersFinishLoading = new MutableLiveData<>();
     private final MutableLiveData<Boolean> preOrdersFinishLoading = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> pointsDiscountExist = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> pointsDiscountExist1 = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> pointsDiscountExist2 = new MutableLiveData<>();
     private final MutableLiveData<Boolean> allUsersFinishedLoading = new MutableLiveData<>();
 
     public MutableLiveData<Boolean> getAllUsersFinishedLoading() {
         return allUsersFinishedLoading;
     }
 
-    public MutableLiveData<Boolean> getPointsDiscountExist() {
-        return pointsDiscountExist;
+    public MutableLiveData<Boolean> getPointsDiscountExist1() {
+        return pointsDiscountExist1;
     }
-
+    public MutableLiveData<Boolean> getPointsDiscountExist2() {
+        return pointsDiscountExist2;
+    }
     public MutableLiveData<Boolean> getCurrentOrdersFinishLoading() {
         return currentOrdersFinishLoading;
     }
@@ -393,7 +396,7 @@ public class Repository {
 
 
 
-    public MutableLiveData<PointsDiscount> getPointsDiscount() throws ExecutionException, InterruptedException {
+    public MutableLiveData<PointsDiscount> getPointsDiscount1() throws ExecutionException, InterruptedException {
         final MutableLiveData<PointsDiscount> pointsDiscountLiveData = new MutableLiveData<>();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("PointsDiscount");
         reference.addValueEventListener(new ValueEventListener() {
@@ -401,7 +404,6 @@ public class Repository {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     PointsDiscount pointsDiscount = snapshot.getValue(PointsDiscount.class);
-                    pointsDiscountExist.postValue(true);
                     pointsDiscountLiveData.postValue(pointsDiscount);
                 }
             }
@@ -413,7 +415,25 @@ public class Repository {
         });
         return pointsDiscountLiveData;
     }
+    public MutableLiveData<PointsDiscount> getPointsDiscount2() throws ExecutionException, InterruptedException {
+        final MutableLiveData<PointsDiscount> pointsDiscountLiveData = new MutableLiveData<>();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("PointsDiscount2");
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    PointsDiscount pointsDiscount = snapshot.getValue(PointsDiscount.class);
+                    pointsDiscountLiveData.postValue(pointsDiscount);
+                }
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        return pointsDiscountLiveData;
+    }
     public MutableLiveData<List<String>> getAllSerials() {
         MutableLiveData<List<String>> allSerialsLiveData = new MutableLiveData<>();
         List<String> allSerials = new ArrayList<>();

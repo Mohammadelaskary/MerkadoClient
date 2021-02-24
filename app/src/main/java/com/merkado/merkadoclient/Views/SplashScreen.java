@@ -34,6 +34,7 @@ public class SplashScreen extends AppCompatActivity {
             public void run() {
                 Intent intent = new Intent(SplashScreen.this, MainActivity.class);
                 intent.putExtra("cart", "");
+                intent.putExtra("depName","");
                 startActivity(intent);
                 finish();
             }

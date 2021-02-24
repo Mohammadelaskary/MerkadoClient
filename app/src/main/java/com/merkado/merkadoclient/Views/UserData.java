@@ -92,7 +92,6 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String governorateName = binding.governorateNameSpinner.getSelectedItem().toString();
-                Toast.makeText(UserData.this, governorateName+"selected", Toast.LENGTH_SHORT).show();
                 getCitiesNames(governorateName);
                 getNeighborhoodsNames(citiesNames.get(0));
                 isCityChanged = true;
@@ -142,9 +141,6 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
 
 
             for (Neighborhood neighborhood:neighborhoods){
-                Log.d("neiGov",neighborhood.getGovernorate());
-                Log.d("neicity",neighborhood.getCity());
-                Log.d("neinei",neighborhood.getNeighborhood());
                 if (!governoratesNames.contains(neighborhood.getGovernorate()))
                     governoratesNames.add(neighborhood.getGovernorate());
                 governoratesAdapter.notifyDataSetChanged();
@@ -462,7 +458,7 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
                         shippingData.setFamousMark(famousMark);
 
                     if (isNeighborhoodChanged)
-                        updateValue(neighborhood, "neighborhood ");
+                        updateValue(neighborhood, "neighborhood");
                     if (isAppartmentNoChanged)
                         updateValue(appartmentNo, "appartmentNo");
                     if (isBuildingNoChanged)

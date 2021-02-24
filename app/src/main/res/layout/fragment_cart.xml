@@ -6,7 +6,8 @@
 <com.facebook.shimmer.ShimmerFrameLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/shimmer_product_order">
+    android:id="@+id/shimmer_product_order"
+    android:visibility="gone">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -35,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone">
+            android:visibility="visible">
 
 
 
@@ -199,40 +200,64 @@
 
 
                 </LinearLayout>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="استخدم نقاطك:"
-                    android:id="@+id/use_your_points"
-                    android:visibility="gone"
-                    android:layout_marginStart="@dimen/_3sdp"/>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/discount_options"
                     android:orientation="horizontal"
+                    android:id="@+id/points_redeem">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/discount_options1"
+                    android:orientation="vertical"
                     android:visibility="gone"
                     android:layoutDirection="rtl"
-                    android:clickable="true"
-                    android:focusable="true"
                     android:layout_marginStart="@dimen/_3sdp"
                     android:layout_marginEnd="@dimen/_3sdp">
-                    <com.google.android.material.button.MaterialButton
-                        android:layout_width="0dp"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:text="استخدم نقاطك:"
+                        android:id="@+id/use_your_points1"
+                        android:visibility="visible"
+                        android:layout_marginStart="@dimen/_3sdp"/>
+                    <com.google.android.material.button.MaterialButton
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:text="شحن مجاني"
-                        android:id="@+id/free_shipping"
+                        android:id="@+id/discount_option1"
                         android:layout_marginStart="@dimen/_5sdp"
                         android:layout_marginEnd="@dimen/_5sdp"/>
-                    <com.google.android.material.button.MaterialButton
+
+                </LinearLayout>
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="خصم 10 جنيه"
-                        android:layout_marginStart="@dimen/_5sdp"
-                        android:layout_marginEnd="@dimen/_5sdp"
-                        android:id="@+id/discount_value"/>
+                        android:id="@+id/discount_options2"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layoutDirection="rtl"
+                        android:layout_marginStart="@dimen/_3sdp"
+                        android:layout_marginEnd="@dimen/_3sdp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="استخدم نقاطك:"
+                            android:id="@+id/use_your_points2"
+                            android:visibility="visible"
+                            android:layout_marginStart="@dimen/_3sdp"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="شحن مجاني"
+                            android:id="@+id/discount_option2"
+                            android:layout_marginStart="@dimen/_5sdp"
+                            android:layout_marginEnd="@dimen/_5sdp"/>
+
+                    </LinearLayout>
                 </LinearLayout>
                 <View
                     android:layout_width="match_parent"

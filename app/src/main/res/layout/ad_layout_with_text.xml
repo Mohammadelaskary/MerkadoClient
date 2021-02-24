@@ -15,10 +15,10 @@
     android:gravity="center_horizontal">
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_80sdp"
+        android:layout_height="@dimen/_100sdp"
         android:id="@+id/ad_image"
         android:src="@drawable/put_your_ad_here"
-        android:scaleType="fitCenter"
+        android:scaleType="center"
         />
     <TextView
         android:layout_width="wrap_content"

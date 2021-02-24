@@ -46,7 +46,7 @@ public class SubDepAdapter extends RecyclerView.Adapter<SubDepAdapter.SubDepView
 
     @Override
     public void onBindViewHolder(@NonNull SubDepViewHolder holder, int position) {
-        String subdepName = subDeparments.get(position).getDepName();
+        String subdepName = subDeparments.get(position).getSubdepName();
         String imageUrl = subDeparments.get(position).getImageUrl();
         int discount = subDeparments.get(position).getDiscount();
         String discountUnit = subDeparments.get(position).getDiscount_unit();
