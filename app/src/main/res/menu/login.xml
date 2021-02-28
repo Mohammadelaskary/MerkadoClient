@@ -9,4 +9,8 @@
         android:title="دخول"
         app:showAsAction="never"
         />
+    <item android:id="@+id/sign_up"
+        android:title="تسجيل"
+        app:showAsAction="never"
+        />
 </menu>

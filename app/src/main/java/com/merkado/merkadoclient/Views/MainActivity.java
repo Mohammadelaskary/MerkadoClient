@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -234,32 +235,34 @@ public class MainActivity extends AppCompatActivity {
 
     public void switchToHomeFragment() {
         FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction().replace(R.id.fragment_container, new HomeFragment(MainActivity.this)).commit();
+        manager.beginTransaction().replace(R.id.fragment_container, new HomeFragment(MainActivity.this)).addToBackStack(null).commit();
     }
 
     public void switchToDepartmentsFragment() {
         FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction().replace(R.id.fragment_container, new DepartmentsFragment(MainActivity.this)).commit();
+        manager.beginTransaction().replace(R.id.fragment_container, new DepartmentsFragment(MainActivity.this)).addToBackStack(null).commit();
     }
 
     public void switchToCartFragment() {
         FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction().replace(R.id.fragment_container, new CartFragment(MainActivity.this)).commit();
+        manager.beginTransaction().replace(R.id.fragment_container, new CartFragment(MainActivity.this)).addToBackStack(null).commit();
     }
 
     public void switchToOffersFragment() {
         FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction().replace(R.id.fragment_container, new OffersFragment(MainActivity.this)).commit();
+        manager.beginTransaction().replace(R.id.fragment_container, new OffersFragment(MainActivity.this)).addToBackStack(null).commit();
     }
 
     public void switchToProfileFragment() {
         FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction().replace(R.id.fragment_container, new ProfileFragment(MainActivity.this)).commit();
+        manager.beginTransaction()
+
+                .replace(R.id.fragment_container, new ProfileFragment(MainActivity.this)).addToBackStack(null).commit();
     }
 
     public void switchToLoginFragment() {
         FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction().replace(R.id.fragment_container, new LoginFragment(MainActivity.this)).commit();
+        manager.beginTransaction().addToBackStack(null).replace(R.id.fragment_container, new LoginFragment(MainActivity.this)).commit();
     }
 
 
@@ -309,6 +312,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.search:
                 goToSearch();
                 return true;
+            case R.id.sign_up:
+                goToSignUp();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -349,20 +355,26 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (doubleBackToExitPressedOnce) {
+            finish();
             super.onBackPressed();
             return;
         }
 
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "اضغط رجوع مرة أخري للخروج", Toast.LENGTH_SHORT).show();
+                if (binding.bottomNav.getSelectedItemId()!=HOME_ID){
+                    initMain();
 
-        new Handler().postDelayed(new Runnable() {
+                } else {
+                    this.doubleBackToExitPressedOnce = true;
+                    Toast.makeText(this, "اضغط رجوع مرة أخري للخروج", Toast.LENGTH_SHORT).show();
 
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce = false;
-            }
-        }, 2000);
+                    new Handler().postDelayed(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            doubleBackToExitPressedOnce = false;
+                        }
+                    }, 2000);
+                }
     }
 
     public void isAllProductsFinishedLoading() {

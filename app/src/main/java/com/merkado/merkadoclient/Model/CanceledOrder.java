@@ -1,20 +1,30 @@
 package com.merkado.merkadoclient.Model;
 
 public class CanceledOrder {
-    private String CustomerName;
+    private String customerName;
+    private String id;
 
-    public CanceledOrder(String customerName) {
-        CustomerName = customerName;
+    public CanceledOrder(String customerName,String id) {
+        this.customerName = customerName;
+        this.id = id;
     }
 
     public CanceledOrder() {
     }
 
     public String getCustomerName() {
-        return CustomerName;
+        return customerName;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setCustomerName(String customerName) {
-        CustomerName = customerName;
+        customerName = customerName;
     }
 }

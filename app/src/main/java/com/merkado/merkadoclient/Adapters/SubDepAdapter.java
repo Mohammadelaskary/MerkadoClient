@@ -48,18 +48,11 @@ public class SubDepAdapter extends RecyclerView.Adapter<SubDepAdapter.SubDepView
     public void onBindViewHolder(@NonNull SubDepViewHolder holder, int position) {
         String subdepName = subDeparments.get(position).getSubdepName();
         String imageUrl = subDeparments.get(position).getImageUrl();
-        int discount = subDeparments.get(position).getDiscount();
-        String discountUnit = subDeparments.get(position).getDiscount_unit();
+
         holder.subDepName.setText(subdepName);
         if (!imageUrl.isEmpty())
             Glide.with(context).load(imageUrl).into(holder.subdepBackground);
-        if (discount==0){
-            holder.subdepDiscountLayout.setVisibility(View.GONE);
-        } else {
-            String discountText = "حتي" + "\n" + discount +" "+ discountUnit+"\n"+"خصم";
-            holder.subdepDiscountLayout.setVisibility(View.VISIBLE);
-            holder.discountTextView.setText(discountText);
-        }
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

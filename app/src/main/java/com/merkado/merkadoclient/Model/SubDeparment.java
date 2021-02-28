@@ -5,8 +5,7 @@ public class SubDeparment {
     private String subdepName;
     private String imageFileName;
     private String imageUrl;
-    private String discount_unit;
-    private int discount;
+
 
     public SubDeparment() {
     }
@@ -16,13 +15,12 @@ public class SubDeparment {
         this.subdepName = subdepName;
     }
 
-    public SubDeparment(String depName, String subdepName, String imageFileName, String imageUrl, String discount_unit, int discount) {
+    public SubDeparment(String depName, String subdepName, String imageFileName, String imageUrl) {
         this.depName = depName;
         this.subdepName = subdepName;
         this.imageFileName = imageFileName;
         this.imageUrl = imageUrl;
-        this.discount_unit = discount_unit;
-        this.discount = discount;
+
     }
 
     public String getImageFileName() {
@@ -41,21 +39,6 @@ public class SubDeparment {
         this.imageUrl = imageUrl;
     }
 
-    public String getDiscount_unit() {
-        return discount_unit;
-    }
-
-    public void setDiscount_unit(String discount_unit) {
-        this.discount_unit = discount_unit;
-    }
-
-    public int getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(int discount) {
-        this.discount = discount;
-    }
 
     public String getDepName() {
         return depName;

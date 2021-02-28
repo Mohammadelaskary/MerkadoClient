@@ -129,8 +129,11 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
 
     private void pushNotication(String customerName) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("CanceledOrder");
-        CanceledOrder canceledOrder = new CanceledOrder(customerName);
+        String key = reference.getKey();
+        CanceledOrder canceledOrder = new CanceledOrder(customerName,key);
         reference.push().setValue(canceledOrder);
+        Query query = reference.orderByChild("id").equalTo(key);
+        query.getRef().setValue(null);
     }
 
     private void cancelOrder(String id,int position) {

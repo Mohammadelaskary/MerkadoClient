@@ -331,7 +331,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 String password = binding.password.getEditText().getText().toString().trim();
                 String confirmPassword = binding.confirmPassword.getEditText().getText().toString().trim();
                 if (customerName.isEmpty()) {
-                    binding.customerName.setError("من فضلك ادخل الاسم الأول");
+                    binding.customerName.setError("من فضلك ادخل الاسم ");
                 }
                 if (streetName.isEmpty()){
                     binding.streetName.setError("من فضلك ادخل اسم الشارع أو المنطقة");
@@ -341,13 +341,13 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 if (mobileNumber.length()!=11)
                     binding.mobileNumber.setError("من فضلك ادخل رقم تليفون صحيح");
                 if (email.isEmpty()){
-                    binding.customerName.setError("من فضلك ادخل البريد الالكتروني");
+                    binding.email.setError("من فضلك ادخل البريد الالكتروني");
                 }
                 if (!MyMethods.isValidEmail(email)){
-                    binding.customerName.setError("من فضلك ادخل بريد الكتروني صحيح");
+                    binding.email.setError("من فضلك ادخل بريد الكتروني صحيح");
                 }
                 if (password.isEmpty()){
-                    binding.customerName.setError("من فضلك ادخل كلمة المرور");
+                    binding.password.setError("من فضلك ادخل كلمة المرور");
                 }
                 if (confirmPassword.isEmpty())
                     binding.confirmPassword.setError("من فضلك ادخل كلمة المرور مرة أخري للتأكيد");
