@@ -1,6 +1,8 @@
 package com.merkado.merkadoclient.Model;
 
 
+import java.math.BigDecimal;
+
 public class Product {
     private String imageUrl;
     private String imageFileName;
@@ -11,13 +13,15 @@ public class Product {
     private String unitWeight;
     private String discount;
     private String discountUnit;
-    private float availableAmount;
+    private String availableAmount;
     private String count;
     private boolean todaysOffer;
     private boolean mostSold;
-    private float minimumOrderAmount;
 
-    public Product(String dep, String subDep, String productName, String price, String unitWeight, String discount, String discountUnit, float availableAmount, boolean todaysOffer, boolean mostSold,float minimumOrderAmount) {
+    private String minimumOrderAmount;
+    private int position;
+
+    public Product(String dep, String subDep, String productName, String price, String unitWeight, String discount, String discountUnit, String availableAmount, boolean todaysOffer, boolean mostSold,String minimumOrderAmount) {
         this.dep = dep;
         this.subDep = subDep;
         this.productName = productName;
@@ -35,11 +39,11 @@ public class Product {
 
     }
 
-    public float getMinimumOrderAmount() {
+    public String getMinimumOrderAmount() {
         return minimumOrderAmount;
     }
 
-    public void setMinimumOrderAmount(float minimumOrderAmount) {
+    public void setMinimumOrderAmount(String minimumOrderAmount) {
         this.minimumOrderAmount = minimumOrderAmount;
     }
 
@@ -140,11 +144,11 @@ public class Product {
         this.discountUnit = discountUnit;
     }
 
-    public float getAvailableAmount() {
+    public String getAvailableAmount() {
         return availableAmount;
     }
 
-    public void setAvailableAmount(int availableAmount) {
+    public void setAvailableAmount(String availableAmount) {
         this.availableAmount = availableAmount;
     }
 
@@ -152,4 +156,15 @@ public class Product {
     public String toString() {
         return productName;
     }
+
+
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
 }

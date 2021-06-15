@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.merkado.merkadoclient.Model.DepartmentNames;
 import com.merkado.merkadoclient.R;
+import com.merkado.merkadoclient.Views.MainActivity;
 
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class DepartmentNamesAdapter extends RecyclerView.Adapter<DepartmentNames
     @Override
     public void onBindViewHolder(@NonNull DepartmentNamesViewHolder holder, int position) {
         String departmentName = departmentNames.get(position).getDepName();
-        holder.depName.setText(departmentName);
+        holder.depName.setText(MainActivity.convertToEnglishDigits(departmentName));
     }
 
     @Override

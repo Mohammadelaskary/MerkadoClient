@@ -8,22 +8,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/loading"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             style="?android:progressBarStyleLarge"
             android:layout_centerInParent="true"
             android:layout_marginTop="@dimen/_30sdp"
-            android:visibility="visible"
-            android:id="@+id/loading"/>
+            android:visibility="visible" />
 <LinearLayout
+    android:id="@+id/form"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     tools:context=".Views.UserData"
     android:orientation="vertical"
     android:layoutDirection="rtl"
     android:gravity="center|top"
-    android:visibility="visible"
-    android:id="@+id/form">
+    android:visibility="visible">
     <com.google.android.material.textview.MaterialTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -202,12 +202,12 @@
 
     </com.google.android.material.textfield.TextInputLayout>
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/building_no"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_10sdp"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:hint="رقم المنزل"
-        android:id="@+id/building_no"
         app:boxCornerRadiusBottomEnd="@dimen/_10sdp"
         app:boxCornerRadiusBottomStart="@dimen/_10sdp"
         app:boxCornerRadiusTopEnd="@dimen/_10sdp"

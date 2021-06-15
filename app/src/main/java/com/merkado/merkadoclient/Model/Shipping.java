@@ -1,16 +1,18 @@
 package com.merkado.merkadoclient.Model;
 
+import java.math.BigDecimal;
+
 public class Shipping {
-    private float shippingFee;
+    private String shippingFee;
 
     public Shipping() {
     }
 
-    public float getShippingFee() {
+    public String getShippingFee() {
         return shippingFee;
     }
 
-    public void setShippingFee(float shippingFee) {
+    public void setShippingFee(String shippingFee) {
         this.shippingFee = shippingFee;
     }
 }

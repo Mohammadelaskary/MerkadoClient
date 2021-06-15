@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".Views.MainActivity"
     android:layoutDirection="rtl"
-    android:background="#FBFBFB"
-    android:id="@+id/main_layout">
+    android:background="#FBFBFB">
   <com.google.android.material.appbar.MaterialToolbar
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -18,7 +17,7 @@
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+
         android:layoutDirection="rtl">
 
     <ImageView android:layout_width="@dimen/_100sdp"
@@ -28,6 +27,7 @@
         />
 
         <TextView
+            android:id="@+id/cart_count"
             android:layout_width="@dimen/_17sdp"
             android:layout_height="@dimen/_17sdp"
             android:padding="@dimen/_1sdp"
@@ -35,11 +35,19 @@
             android:layout_marginStart="@dimen/_55sdp"
             android:text="3"
             android:visibility="gone"
-            android:id="@+id/cart_count"
             android:textSize="@dimen/_10ssp"
             android:gravity="center"
             android:background="@drawable/cart_indecator_background"
             />
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/app_name"
+          android:layout_centerInParent="true"
+          android:textColor="@color/white"
+          android:textSize="@dimen/_25ssp"
+          android:gravity="center"
+          android:layout_toEndOf="@id/big_logo"/>
     </RelativeLayout>
   </com.google.android.material.appbar.MaterialToolbar>
   <FrameLayout

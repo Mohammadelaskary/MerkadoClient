@@ -48,6 +48,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.shashank.sony.fancytoastlib.FancyToast;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -80,14 +81,14 @@ public class CartFragment extends Fragment {
     boolean freeShippingUsed = false;
     boolean pointsFreeShipping1 = false;
     boolean pointsFreeShipping2 = false;
-    float sumValue = 0;
-    float discountValue = 0;
-    float overAllDiscountValue = 0;
-    float totalCostValue = 0;
-    float shippingValue = 10;
-    float defaultPointsDiscountValue = 0;
-    float pointsDiscountValue = 0;
-    float pointsDiscountValue2 = 0;
+    BigDecimal sumValue = BigDecimal.ZERO;
+    BigDecimal discountValue = BigDecimal.ZERO;
+    BigDecimal overAllDiscountValue =BigDecimal.ZERO;
+    BigDecimal totalCostValue = BigDecimal.ZERO;
+    BigDecimal shippingValue = BigDecimal.valueOf(10);
+    BigDecimal defaultPointsDiscountValue = BigDecimal.ZERO;
+    BigDecimal pointsDiscountValue = BigDecimal.ZERO;
+    BigDecimal pointsDiscountValue2 = BigDecimal.ZERO;
     boolean isClicked = false;
     int subtractedPoints = 0;
     List<User> allUsers = new ArrayList<>();
@@ -146,7 +147,7 @@ public class CartFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 for (ProductOrder orderProduct : orders) {
-                    if (orderProduct.getAvailable() <= 0) {
+                    if (new BigDecimal(orderProduct.getAvailable()).compareTo(BigDecimal.ZERO) <= 0) {
                         removeFromCart(orderProduct.getProductName());
                         allProductsAvailable = false;
                     }
@@ -165,7 +166,7 @@ public class CartFragment extends Fragment {
                                         for (ProductOrder orderProduct : orders) {
                                             MainActivity.dataBase.myDao().addOrder(orderProduct);
                                         }
-                                        OrderCost cost = new OrderCost(sumValue, discountValue, overAllDiscountValue, shippingValue, totalCostValue);
+                                        OrderCost cost = new OrderCost(sumValue.toString(), discountValue.toString(), overAllDiscountValue.toString(), shippingValue.toString(), totalCostValue.toString());
                                         MainActivity.dataBase.myDao().addTotalCost(cost);
                                         for (ProductOrder orderProduct:orders){
                                             MainActivity.dataBase.myDao().addOrder(orderProduct);
@@ -186,7 +187,7 @@ public class CartFragment extends Fragment {
 
 
                 } else {
-                    OrderCost cost = new OrderCost(sumValue, discountValue, overAllDiscountValue, shippingValue, totalCostValue);
+                    OrderCost cost = new OrderCost(sumValue.toString(), discountValue.toString(), overAllDiscountValue.toString(), shippingValue.toString(), totalCostValue.toString());
                     MainActivity.dataBase.myDao().addTotalCost(cost);
                     for (ProductOrder orderProduct:orders){
                         MainActivity.dataBase.myDao().addOrder(orderProduct);
@@ -228,9 +229,11 @@ public class CartFragment extends Fragment {
                 } else {
                     if (isClicked) {
                         FancyToast.makeText(getContext(), "لا يمكنك استخدام الخصم أكثر من مرة", FancyToast.LENGTH_SHORT, FancyToast.WARNING, false).show();
+                        discount_option2.setEnabled(false);
+                        discount_option1.setEnabled(false);
                     } else {
                         if (pointsFreeShipping1){
-                            freeShipping = pointsFreeShipping2;
+                            freeShippingUsed = pointsFreeShipping1;
                         } else {
                             defaultPointsDiscountValue = pointsDiscountValue;
                         }
@@ -238,6 +241,8 @@ public class CartFragment extends Fragment {
                         redeemDiscount.setEnabled(false);
                         calculateCosts();
                         isClicked = true;
+                        discount_option2.setEnabled(false);
+                        discount_option1.setEnabled(false);
                     }
                 }
             }
@@ -250,9 +255,11 @@ public class CartFragment extends Fragment {
                 } else {
                     if (isClicked) {
                         FancyToast.makeText(getContext(), "لا يمكنك استخدام الخصم أكثر من مرة", FancyToast.LENGTH_SHORT, FancyToast.WARNING, false).show();
+                        discount_option2.setEnabled(false);
+                        discount_option1.setEnabled(false);
                     } else {
                         if (pointsFreeShipping2){
-                            freeShipping = pointsFreeShipping2;
+                            freeShippingUsed = pointsFreeShipping2;
                         } else {
 
                             defaultPointsDiscountValue = pointsDiscountValue2;
@@ -262,6 +269,8 @@ public class CartFragment extends Fragment {
                        redeemDiscount.setEnabled(false);
                         calculateCosts();
                         isClicked = true;
+                        discount_option2.setEnabled(false);
+                        discount_option1.setEnabled(false);
                     }
                 }
             }
@@ -276,11 +285,9 @@ public class CartFragment extends Fragment {
                 if (pointsDiscount != null) {
                     pointsFreeShipping1 = pointsDiscount.isFreeShipping();
                     minPoints = pointsDiscount.getNumberOfPoints();
-                    pointsDiscountValue = pointsDiscount.getDiscountValue();
+                    pointsDiscountValue = new BigDecimal(pointsDiscount.getDiscountValue());
                     discountOptions1.setVisibility(View.VISIBLE);
-                    Log.d("pointsShipping", pointsFreeShipping1 + "");
-                    Log.d("pointsShipping", minPoints + "");
-                    Log.d("pointsShipping", pointsDiscountValue + "");
+
                     String title = "استخدم " + minPoints + " نقاط للحصول على:";
                     useYourPoints1.setText(title);
 
@@ -305,7 +312,7 @@ public class CartFragment extends Fragment {
                     if (pointsDiscount != null) {
                         pointsFreeShipping2 = pointsDiscount.isFreeShipping();
                         minPoints2 = pointsDiscount.getNumberOfPoints();
-                        pointsDiscountValue2 = pointsDiscount.getDiscountValue();
+                        pointsDiscountValue2 = new BigDecimal(pointsDiscount.getDiscountValue());
                         discountOptions2.setVisibility(View.VISIBLE);
                         Log.d("pointsShipping", pointsFreeShipping1 + "");
                         Log.d("pointsShipping", minPoints + "");
@@ -405,18 +412,18 @@ public class CartFragment extends Fragment {
             for (Cart cart : productInCart) {
                 if (cart.getProductName().equals(product.getProductName())) {
                     String imageUrl, unitWeight, productName, originalPrice, discount, discountType;
-                    float orderedAmount, availableAmount;
-                    float minimumOrderAmount;
+                    BigDecimal orderedAmount, availableAmount;
+                    BigDecimal minimumOrderAmount;
                     imageUrl = product.getImageUrl();
                     productName = cart.getProductName();
-                    orderedAmount = cart.getNumberOfProducts();
+                    orderedAmount = new BigDecimal(cart.getNumberOfProducts());
                     originalPrice = product.getPrice();
                     discount = product.getDiscount();
                     discountType = product.getDiscountUnit();
-                    availableAmount = product.getAvailableAmount();
+                    availableAmount = new BigDecimal(product.getAvailableAmount());
                     unitWeight = product.getUnitWeight();
-                    minimumOrderAmount = product.getMinimumOrderAmount();
-                    ProductOrder orderProduct = new ProductOrder(imageUrl, productName, orderedAmount, originalPrice, discount, discountType, availableAmount, unitWeight,minimumOrderAmount);
+                    minimumOrderAmount = new BigDecimal(product.getMinimumOrderAmount());
+                    ProductOrder orderProduct = new ProductOrder(imageUrl, productName, orderedAmount.toString(), originalPrice, discount, discountType, availableAmount.toString(), unitWeight,minimumOrderAmount.toString());
                     orders.add(orderProduct);
                     productOrdersAdapter.notifyDataSetChanged();
                     break;
@@ -495,56 +502,56 @@ public class CartFragment extends Fragment {
     }
 
     public void calculateCosts() {
-        sumValue = 0;
-        discountValue = 0;
-        overAllDiscountValue = 0;
-        totalCostValue = 0;
-        shippingValue = 10;
+        sumValue = BigDecimal.ZERO;
+        discountValue = BigDecimal.ZERO;
+        overAllDiscountValue = BigDecimal.ZERO;
+        totalCostValue = BigDecimal.ZERO;
+        shippingValue = BigDecimal.valueOf(10);
         if (!productInCart.isEmpty()) {
             cartLayout.setVisibility(View.VISIBLE);
             noConnection.setVisibility(View.GONE);
             if (shippingFee != null) {
-                shippingValue = shippingFee.getShippingFee();
+                shippingValue = new BigDecimal(shippingFee.getShippingFee());
             }
             Log.d("free shipping", freeShipping + "");
             if (freeShippingUsed)
-                shippingValue = 0;
-            shipping.setText("+ " + shippingValue);
+                shippingValue =BigDecimal.ZERO;
+            shipping.setText("+ " + String.valueOf(shippingValue));
             for (ProductOrder orderProduct : orders) {
-                float orderedAmount = orderProduct.getOrdered();
-                float originalPriceValue = Float.parseFloat(orderProduct.getOriginalPrice());
-                sumValue += orderedAmount * originalPriceValue;
-                float discountForOne = 0;
+                BigDecimal orderedAmount = new BigDecimal(orderProduct.getOrdered());
+                BigDecimal originalPriceValue = new BigDecimal(orderProduct.getOriginalPrice());
+                sumValue = sumValue.add( orderedAmount.multiply(originalPriceValue));
+                BigDecimal discountForOne = BigDecimal.ZERO;
                 if (!orderProduct.getDiscount().isEmpty()) {
-                    discountForOne = Float.parseFloat(orderProduct.getDiscount());
+                    discountForOne = new BigDecimal(orderProduct.getDiscount());
 
                     if (orderProduct.getDiscountType().equals("%"))
-                        discountForOne = originalPriceValue * (discountForOne / 100);
+                        discountForOne = originalPriceValue.multiply(discountForOne.divide(BigDecimal.valueOf(100)));
 
-                    discountValue += discountForOne * orderedAmount;
+                    discountValue =discountValue.add( discountForOne .multiply(orderedAmount));
                 }
             }
             sum.setText(String.valueOf(sumValue));
-            discount.setText("- " + discountValue);
-            totalCostValue = sumValue - discountValue;
+            discount.setText("- " +String.valueOf(discountValue));
+            totalCostValue = sumValue.subtract(discountValue);
             Log.d("totalCost", totalCostValue + "");
             Log.d("shipping", shippingValue + "");
             Log.d("overall", overAllDiscountValue + "");
             Log.d("points", defaultPointsDiscountValue + "");
             if (overAllDiscount != null) {
-                float minimumForDiscount = Float.parseFloat(overAllDiscount.getMinimum());
-                overAllDiscountValue = Float.parseFloat(overAllDiscount.getDiscount());
-                if (totalCostValue < minimumForDiscount) {
-                    overAllDiscountValue = 0;
+                BigDecimal minimumForDiscount = new BigDecimal(overAllDiscount.getMinimum());
+                overAllDiscountValue =new  BigDecimal(overAllDiscount.getDiscount());
+                if (totalCostValue.compareTo(  minimumForDiscount)<0) {
+                    overAllDiscountValue = BigDecimal.ZERO;
                 } else {
                     if (overAllDiscount.getDiscount_unit().equals("%"))
-                        overAllDiscountValue = totalCostValue * (overAllDiscountValue / 100);
+                        overAllDiscountValue = totalCostValue.multiply(overAllDiscountValue.divide(BigDecimal.valueOf(100)));
                 }
-                overAllDiscountTextView.setText("- " + overAllDiscountValue);
+                overAllDiscountTextView.setText("- " +overAllDiscountValue);
             }
-            totalCostValue = totalCostValue + shippingValue - overAllDiscountValue - defaultPointsDiscountValue;
-            if (totalCostValue<=0)
-                totalCostValue = 0 ;
+            totalCostValue = totalCostValue.add(shippingValue).subtract( overAllDiscountValue).subtract(defaultPointsDiscountValue);
+            if (totalCostValue.compareTo(BigDecimal.ZERO)<=0)
+                totalCostValue = BigDecimal.ZERO ;
             total.setText(String.valueOf(totalCostValue));
 
         } else {

@@ -20,8 +20,6 @@
     <string name="password" translatable="false">كلمة المرور</string>
     <string name="mobile_number" translatable="false">رقم التليفون المحمول</string>
     <string name="phone_number" translatable="false">رقم التليفون الأرضي(اختياري)</string>
-    <string name="full_address" translatable="false">العنوان بالكامل</string>
-    <string name="city" translatable="false">المدينة</string>
     <string name="confirm_password" translatable="false">تأكيد كلمة المرور</string>
     <string name="thanks_for_using" translatable="false">شكرا لاستخدامك ميركادو</string>
     <string name="apologize" translatable="false">لا يمكننا تنفيذ طلبك الأن حيث أنه خارج نطاق عملنا تابعونا سنصل إليكم قريبا</string>
@@ -32,8 +30,6 @@
     <string name="logout" translatable="false">تسجيل خروج</string>
     <string name="search_for_product" translatable="false">ابحث عن منتج...</string>
     <string name="search" translatable="false">بحث</string>
-    <string name="neighborhood">الحي</string>
-    <string name="governorate">المحافظة</string>
 
 
 </resources>

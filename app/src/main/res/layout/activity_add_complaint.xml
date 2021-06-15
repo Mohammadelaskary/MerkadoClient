@@ -7,11 +7,12 @@
     tools:context=".Views.AddComplaint"
     android:orientation="vertical"
     android:gravity="center">
+
     <ImageView
         android:layout_width="@dimen/_200sdp"
-        android:layout_height="@dimen/_200sdp"
-        android:src="@drawable/ic_merkado_app_big"
-        android:layout_marginBottom="@dimen/_10sdp"/>
+        android:layout_height="276dp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:src="@drawable/ic_merkado_app_big" />
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,12 +32,12 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/mobile_number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_10sdp"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:hint="@string/mobile_number"
-        android:id="@+id/mobile_number"
         app:boxCornerRadiusBottomEnd="@dimen/_10sdp"
         app:boxCornerRadiusBottomStart="@dimen/_10sdp"
         app:boxCornerRadiusTopEnd="@dimen/_10sdp"
@@ -48,12 +49,12 @@
 
     </com.google.android.material.textfield.TextInputLayout>
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/complaint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_10sdp"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:hint="الشكوي/المقترح"
-        android:id="@+id/complaint"
         app:boxCornerRadiusBottomEnd="@dimen/_10sdp"
         app:boxCornerRadiusBottomStart="@dimen/_10sdp"
         app:boxCornerRadiusTopEnd="@dimen/_10sdp"

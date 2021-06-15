@@ -5,6 +5,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.math.BigDecimal;
+
 @Entity(tableName = "Orders")
 public class ProductOrder {
     @PrimaryKey(autoGenerate = true)
@@ -17,9 +19,9 @@ public class ProductOrder {
     private String finalPrice;
     private String totalCost;
     private String unitWeight;
-    private float ordered;
-    private float available;
-    private float minimumOrderAmount;
+    private String ordered;
+    private String available;
+    private String minimumOrderAmount;
 
     public ProductOrder() {
     }
@@ -33,15 +35,15 @@ public class ProductOrder {
     }
 
     public String getFinalPrice() {
-        float originalPriceValue = Float.parseFloat(originalPrice);
+        BigDecimal originalPriceValue =  new BigDecimal(originalPrice);
 
-        float discountFloatValue = 0;
+
         if (!discount.equals("")) {
-            discountFloatValue = Float.parseFloat(discount);
+             BigDecimal discountBigDecimalValue = new BigDecimal(discount);
             if (discountType.equals("جنيه")) {
-                finalPrice = String.valueOf(originalPriceValue - discountFloatValue);
+                finalPrice = String.valueOf(originalPriceValue.subtract(discountBigDecimalValue));
             } else if (discountType.equals("%")) {
-                finalPrice = String.valueOf(originalPriceValue * (1 - (discountFloatValue / 100)));
+                finalPrice = String.valueOf(originalPriceValue.multiply(BigDecimal.ONE.subtract (discountBigDecimalValue.divide(BigDecimal.valueOf(100)))));
             }
         } else {
             finalPrice = originalPrice;
@@ -78,7 +80,7 @@ public class ProductOrder {
     }
 
     @Ignore
-    public ProductOrder(String imageURL, String productName, float ordered, String originalPrice, String discount, String discountType, float available, String unitWeight,float minimumOrderAmount) {
+    public ProductOrder(String imageURL, String productName, String ordered, String originalPrice, String discount, String discountType, String available, String unitWeight, String minimumOrderAmount) {
 
         this.ImageURL = imageURL;
         this.productName = productName;
@@ -91,11 +93,11 @@ public class ProductOrder {
         this.minimumOrderAmount = minimumOrderAmount;
     }
 
-    public float getMinimumOrderAmount() {
+    public String getMinimumOrderAmount() {
         return minimumOrderAmount;
     }
 
-    public void setMinimumOrderAmount(float minimumOrderAmount) {
+    public void setMinimumOrderAmount(String minimumOrderAmount) {
         this.minimumOrderAmount = minimumOrderAmount;
     }
 
@@ -108,9 +110,9 @@ public class ProductOrder {
     }
 
     public String getTotalCost() {
-        float finalPriceValue = Float.parseFloat(finalPrice);
-        float orderedAmountValue = ordered;
-        totalCost = String.valueOf(finalPriceValue * orderedAmountValue);
+        BigDecimal finalPriceValue = new BigDecimal(finalPrice);
+        BigDecimal orderedAmountValue = new BigDecimal(ordered);
+        totalCost = String.valueOf(finalPriceValue.multiply(orderedAmountValue));
         return totalCost;
     }
 
@@ -134,19 +136,19 @@ public class ProductOrder {
         this.productName = productName;
     }
 
-    public float getOrdered() {
+    public String getOrdered() {
         return ordered;
     }
 
-    public void setOrdered(float ordered) {
+    public void setOrdered(String ordered) {
         this.ordered = ordered;
     }
 
-    public float getAvailable() {
+    public String getAvailable() {
         return available;
     }
 
-    public void setAvailable(float available) {
+    public void setAvailable(String available) {
         this.available = available;
     }
 }

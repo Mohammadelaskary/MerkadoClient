@@ -8,6 +8,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -28,6 +29,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.shashank.sony.fancytoastlib.FancyToast;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -63,6 +65,7 @@ public class OrderSent extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityOrderSentBinding.inflate(getLayoutInflater());
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(binding.getRoot());
         Intent intent = getIntent();
         promoCode = intent.getStringExtra("promoCode");
@@ -193,13 +196,13 @@ public class OrderSent extends AppCompatActivity {
 
     private void decrementProductsAmount() {
         for (ProductOrder orderProduct : orderProducts) {
-            float orderedAmount = orderProduct.getOrdered();
-            float availableAmount = orderProduct.getAvailable();
+            BigDecimal orderedAmount = new  BigDecimal(orderProduct.getOrdered());
+            BigDecimal availableAmount = new  BigDecimal(orderProduct.getAvailable());
             String productName = orderProduct.getProductName();
 
-                availableAmount -= orderedAmount;
+                availableAmount = availableAmount.subtract(orderedAmount);
                 Map<String, Object> newAvailableAmount = new HashMap<>();
-                newAvailableAmount.put("availableAmount", availableAmount);
+                newAvailableAmount.put("availableAmount", availableAmount.toString());
                 DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Products");
                 Query query = reference.orderByChild("productName").equalTo(productName);
                 query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -230,11 +233,11 @@ public class OrderSent extends AppCompatActivity {
                     neighborhoodsList.add(neighborhood.getNeighborhood());
                     Log.d("orderSent neifromdb", "onChanged: " + "'" + neighborhood.getNeighborhood() + "'");
                 }
-                float sumValue = orderCost.get(orderCost.size() - 1).getSum();
-                float discountValue = orderCost.get(orderCost.size() - 1).getDiscount();
-                float overAllDiscount = orderCost.get(orderCost.size() - 1).getOverAllDiscount();
-                float shippingFee = orderCost.get(orderCost.size() - 1).getShippingFee();
-                float totalCost = orderCost.get(orderCost.size() - 1).getTotalCost();
+                BigDecimal sumValue = new  BigDecimal(orderCost.get(orderCost.size() - 1).getSum());
+                BigDecimal discountValue = new  BigDecimal(orderCost.get(orderCost.size() - 1).getDiscount());
+                BigDecimal overAllDiscount = new  BigDecimal(orderCost.get(orderCost.size() - 1).getOverAllDiscount());
+                BigDecimal shippingFee = new  BigDecimal(orderCost.get(orderCost.size() - 1).getShippingFee());
+                BigDecimal totalCost = new  BigDecimal(orderCost.get(orderCost.size() - 1).getTotalCost());
                 String username = shippingData.get(shippingData.size() - 1).getUsername();
                 String mobileNumber = shippingData.get(shippingData.size() - 1).getMobileNumber();
                 String phoneNumber = shippingData.get(shippingData.size() - 1).getPhoneNumber();
@@ -254,8 +257,8 @@ public class OrderSent extends AppCompatActivity {
                         FancyToast.makeText(OrderSent.this, "تم استخدام كود الأصدقاء على هذا الجهاز من قبل !", FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
                     if (promoCodes.contains(promoCode) && !promoCode.equals(myPromoCode) && deserveDiscount && !promoCodeUsedBefore) {
                         binding.congrat.setVisibility(View.VISIBLE);
-                        totalCost -= shippingFee;
-                        shippingFee = 0;
+                        totalCost =totalCost.subtract( shippingFee);
+                        shippingFee = BigDecimal.ZERO;
                         incremantCount();
                         String serialNumber = getSerialNumber();
                         addSerialNumber(serialNumber);
@@ -282,11 +285,11 @@ public class OrderSent extends AppCompatActivity {
                             phoneNumber,
                             address,
                             orderProducts,
-                            sumValue,
-                            discountValue,
-                            overAllDiscount,
-                            shippingFee,
-                            totalCost,
+                            sumValue.toString(),
+                            discountValue.toString(),
+                            overAllDiscount.toString(),
+                            shippingFee.toString(),
+                            totalCost.toString(),
                             userId,
                             true);
                     fullOrder.setId(id);

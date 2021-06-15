@@ -37,6 +37,14 @@
                     android:textSize="@dimen/_10ssp"
                     android:background="@drawable/cart_indecator_background"
                     />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:layout_centerInParent="true"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_30ssp"
+                android:gravity="center"/>
             </RelativeLayout>
 
     </com.google.android.material.appbar.MaterialToolbar>
@@ -66,9 +74,9 @@
         />
 
     <TextView
+        android:id="@+id/no_products"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/no_products"
         android:textSize="@dimen/_20sdp"
         android:text="لا يوجد منتجات"
         android:paddingEnd="@dimen/_30sdp"
@@ -77,9 +85,9 @@
         android:visibility="gone"
         />
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/products_rec"
         android:layout_height="match_parent"
         android:layout_width="wrap_content"
-        android:id="@+id/products_rec"
         android:layout_marginTop="@dimen/_5sdp"
         />
 </LinearLayout>

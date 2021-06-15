@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -15,9 +14,9 @@
         android:layout_margin="@dimen/_7sdp"
         android:textColor="@color/home"/>
     <TextView
+        android:id="@+id/apologize"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/apologize"
         android:textSize="@dimen/_20sdp"
         android:gravity="center"
         android:layout_margin="@dimen/_7sdp"
@@ -27,9 +26,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:id="@+id/order_sent">
+        android:gravity="center">
     <TextView
+        android:id="@+id/order_sent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_7sdp"
@@ -37,20 +36,20 @@
         android:textSize="@dimen/_20sdp"
         android:textColor="@color/product_stroke"/>
         <TextView
+            android:id="@+id/congrat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_7sdp"
             android:text="@string/congratulation"
-            android:id="@+id/congrat"
             android:textSize="@dimen/_20sdp"
             android:gravity="center"
             android:textColor="@color/offers"/>
         <TextView
+            android:id="@+id/final_cost"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_7sdp"
             android:text="@string/final_cost"
-            android:id="@+id/final_cost"
             android:textSize="@dimen/_20sdp"
             android:gravity="center"
             android:textColor="@color/colorPrimaryDark"/>
@@ -59,7 +58,6 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_7sdp"
             android:text="مواعيد العمل من 10.00 ص إلى 12.00 م"
-            android:id="@+id/work_dates"
             android:textSize="@dimen/_20sdp"
             android:gravity="center"
             android:textColor="@color/colorPrimaryDark"/>

@@ -8,6 +8,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.merkado.merkadoclient.Model.Complaint;
 import com.merkado.merkadoclient.databinding.ActivityAddComplaintBinding;
@@ -26,6 +27,7 @@ public class AddComplaint extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityAddComplaintBinding.inflate(getLayoutInflater());
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(binding.getRoot());
         Objects.requireNonNull(binding.complaint.getEditText()).addTextChangedListener(new TextWatcher() {
             @Override

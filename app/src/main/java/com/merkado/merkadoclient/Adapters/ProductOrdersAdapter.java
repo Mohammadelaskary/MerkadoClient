@@ -1,6 +1,7 @@
 package com.merkado.merkadoclient.Adapters;
 
 import android.content.Context;
+import android.service.notification.ZenPolicy;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +25,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.merkado.merkadoclient.Views.MainActivity;
 import com.shashank.sony.fancytoastlib.FancyToast;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,19 +56,19 @@ public class ProductOrdersAdapter extends RecyclerView.Adapter<ProductOrdersAdap
     public void onBindViewHolder(@NonNull ProductOrdersViewHolder holder, int position) {
         String imageUrl = orderProducts.get(position).getImageURL();
         String productName = orderProducts.get(position).getProductName();
-        float orderedAmount = orderProducts.get(position).getOrdered();
+        BigDecimal orderedAmount = new BigDecimal(orderProducts.get(position).getOrdered());
         String originalPrice = orderProducts.get(position).getOriginalPrice();
         String finalPrice = orderProducts.get(position).getFinalPrice();
         String discount = orderProducts.get(position).getDiscount();
         String discountType = orderProducts.get(position).getDiscountType();
         String totalCost = orderProducts.get(position).getTotalCost();
         String unitWeight = orderProducts.get(position).getUnitWeight();
-        float minnimumOrderAmount = orderProducts.get(position).getMinimumOrderAmount();
-        float availablaAmount;
-        if (orderProducts.get(position).getAvailable() != 0) {
-            availablaAmount = orderProducts.get(position).getAvailable();
+        BigDecimal minnimumOrderAmount = new BigDecimal(orderProducts.get(position).getMinimumOrderAmount());
+        BigDecimal availablaAmount;
+        if (!new BigDecimal(orderProducts.get(position).getAvailable()).equals(BigDecimal.ZERO)) {
+            availablaAmount = new BigDecimal(orderProducts.get(position).getAvailable());
         } else {
-            availablaAmount = 0;
+            availablaAmount = BigDecimal.ZERO;
         }
         if (imageUrl.isEmpty())
             holder.productImage.setImageResource(R.drawable.no_image);
@@ -78,9 +81,9 @@ public class ProductOrdersAdapter extends RecyclerView.Adapter<ProductOrdersAdap
             @Override
             public void onClick(View view) {
                 Map<String, Object> num = new HashMap<>();
-                float newValue = orderedAmount +minnimumOrderAmount;
-                num.put("numberOfProducts", newValue);
-                if (newValue <= availablaAmount) {
+                BigDecimal newValue = orderedAmount.add(minnimumOrderAmount);
+                num.put("numberOfProducts", newValue.toString());
+                if (newValue.compareTo(availablaAmount)<=0) {
                     DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Cart").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
                     Query query = reference.orderByChild("productName").equalTo(productName);
                     query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -111,9 +114,9 @@ public class ProductOrdersAdapter extends RecyclerView.Adapter<ProductOrdersAdap
             @Override
             public void onClick(View view) {
                 Map<String, Object> num = new HashMap<>();
-                float newValue = orderedAmount - minnimumOrderAmount;
-                num.put("numberOfProducts", newValue);
-                if (newValue <= availablaAmount && newValue > 0) {
+                BigDecimal newValue = orderedAmount.subtract(minnimumOrderAmount);
+                num.put("numberOfProducts", newValue.toString());
+                if (newValue.compareTo(availablaAmount) <=0&& newValue.compareTo(BigDecimal.ZERO) > 0) {
                     DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Cart").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
                     Query query = reference.orderByChild("productName").equalTo(productName);
                     query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -131,7 +134,7 @@ public class ProductOrdersAdapter extends RecyclerView.Adapter<ProductOrdersAdap
 
                     holder.orderedAmount.setText(String.valueOf(newValue));
 
-                } else if (newValue == 0) {
+                } else if (newValue.compareTo(BigDecimal.ZERO) <= 0) {
                     removeItem(position, view);
                 }
             }

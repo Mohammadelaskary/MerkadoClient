@@ -13,7 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.merkado.merkadoclient.Database.ProductOrder;
 import com.merkado.merkadoclient.R;
+import com.merkado.merkadoclient.Views.MainActivity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.OrdersViewHolder> {
@@ -36,7 +38,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.OrdersView
     public void onBindViewHolder(@NonNull OrdersViewHolder holder, int position) {
         String imageURL = orderList.get(position).getImageURL();
         String product_name = orderList.get(position).getProductName();
-        float orderAmount = orderList.get(position).getOrdered();
+        BigDecimal orderAmount = new BigDecimal(orderList.get(position).getOrdered());
         String finalPrice = orderList.get(position).getFinalPrice();
         String totalCost = orderList.get(position).getTotalCost();
         String unitWeight = orderList.get(position).getUnitWeight();

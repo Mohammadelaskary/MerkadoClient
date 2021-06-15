@@ -34,8 +34,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.merkado.merkadoclient.Views.MainActivity;
 import com.shashank.sony.fancytoastlib.FancyToast;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -75,9 +77,9 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
         String discount = products.get(position).getDiscount();
         String discountUnit = products.get(position).getDiscountUnit();
         String unitWeight = products.get(position).getUnitWeight();
-        float availableAmount = products.get(position).getAvailableAmount();
+        BigDecimal availableAmount =new BigDecimal(products.get(position).getAvailableAmount());
         boolean mostSold = products.get(position).isMostSold();
-        float mininumOrderAmount = products.get(position).getMinimumOrderAmount();
+        BigDecimal mininumOrderAmount = new BigDecimal(products.get(position).getMinimumOrderAmount());
         String finalPrice = originalPrice;
         if (!discount.isEmpty())
             finalPrice = calculateFinalPrice(originalPrice, discount, discountUnit);
@@ -95,9 +97,9 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
 
         holder.productName.setText(productName);
 
-        holder.discount.setText(fullDiscountText);
+        holder.discount.setText(String.valueOf(fullDiscountText));
 
-        holder.originalPrice.setText(originalPriceText);
+        holder.originalPrice.setText(String.valueOf(originalPriceText));
 
         if (discount.isEmpty()) {
             holder.originalPrice.setVisibility(View.INVISIBLE);
@@ -107,14 +109,14 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
             holder.discount.setVisibility(View.VISIBLE);
         }
 
-        holder.finalPrice.setText(finalPriceText);
+        holder.finalPrice.setText(String.valueOf(finalPriceText));
 
         if (mostSold)
             holder.mostSold.setVisibility(View.VISIBLE);
         else
             holder.mostSold.setVisibility(View.GONE);
 
-        if (availableAmount == 0) {
+        if (availableAmount.equals(0) ) {
             holder.unavailableLayout.setVisibility(View.VISIBLE);
             holder.addCart.setClickable(false);
         } else {
@@ -132,7 +134,7 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
         holder.addCart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (FirebaseAuth.getInstance().getCurrentUser() != null && availableAmount > 0) {
+                if (FirebaseAuth.getInstance().getCurrentUser() != null && availableAmount.compareTo(BigDecimal.ZERO)>0) {
                     context.startService(new Intent(context, SoundService.class));
                     if (!productsInCart().contains(productName)) {
                         addCart(productName,mininumOrderAmount);
@@ -170,7 +172,8 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
             @Override
             public void onClick(View view) {
                 increamentCart(productName, holder.orderedAmount, false, availableAmount,mininumOrderAmount);
-                if (getOrderedAmount(productName) - 1 <= 0) {
+                BigDecimal newValue = getOrderedAmount(productName).add(BigDecimal.ONE);
+                if (newValue.compareTo(BigDecimal.ZERO) <= 0) {
                     holder.addCart.setVisibility(View.VISIBLE);
                     holder.addRemoveCart.setVisibility(View.GONE);
                     removeFromCart(productName);
@@ -199,9 +202,9 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
         });
     }
 
-    private void addCart(String productName,float minimumOrderAmount) {
+    private void addCart(String productName,BigDecimal minimumOrderAmount) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Cart").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        Cart cart = new Cart(productName, minimumOrderAmount);
+        Cart cart = new Cart(productName, minimumOrderAmount.toString());
         reference.push().setValue(cart).addOnCompleteListener(this);
 
     }
@@ -227,11 +230,11 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
         return productsInCart;
     }
 
-    private float getOrderedAmount(String productName) {
-        float orderedAmount = 0;
+    private BigDecimal getOrderedAmount(String productName) {
+        BigDecimal orderedAmount = BigDecimal.ZERO;
         for (Cart cart : cart) {
             if (cart.getProductName().equals(productName)) {
-                orderedAmount = cart.getNumberOfProducts();
+                orderedAmount = new BigDecimal(cart.getNumberOfProducts());
                 break;
             }
         }
@@ -249,14 +252,14 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
         return isExist;
     }
 
-    private void increamentCart(String productName, TextView orderedAmount, boolean increament, float availableAmount,float minimumOrderAmount) {
+    private void increamentCart(String productName, TextView orderedAmount, boolean increament, BigDecimal availableAmount,BigDecimal minimumOrderAmount) {
 
-        float newValue;
+        BigDecimal newValue;
         if (increament)
-            newValue =  getOrderedAmount(productName) + minimumOrderAmount;
+            newValue =  getOrderedAmount(productName).add(minimumOrderAmount);
         else
-            newValue = getOrderedAmount(productName) - minimumOrderAmount;
-        if (newValue <= availableAmount) {
+            newValue = getOrderedAmount(productName).subtract(minimumOrderAmount);
+        if (newValue.compareTo(availableAmount) <= 0) {
             Map<String, Object> map = new HashMap<>();
             map.put("numberOfProducts", newValue);
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Cart").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
@@ -267,7 +270,7 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
                     for (DataSnapshot dataSnapshot : snapshot.getChildren())
                         dataSnapshot.getRef().updateChildren(map);
                     orderedAmount.setText(String.valueOf(newValue));
-                    if (newValue <= 0)
+                    if (newValue.compareTo(BigDecimal.ZERO) <= 0)
                         removeFromCart(productName);
                     Log.d("availableAmount", availableAmount + "");
                 }
@@ -307,12 +310,12 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
     }
 
     private String calculateFinalPrice(String originalPrice, String discount, String discountUnit) {
-        float originalPriceNum = Float.parseFloat(originalPrice);
-        float discountNum = Float.parseFloat(discount);
+        BigDecimal originalPriceNum = new BigDecimal(originalPrice);
+        BigDecimal discountNum = new BigDecimal(discount);
         if (discountUnit.equals("جنيه")) {
-            return String.valueOf(originalPriceNum - discountNum);
+            return String.valueOf(originalPriceNum.subtract(discountNum));
         } else {
-            return String.valueOf(originalPriceNum * (1 - (discountNum / 100)));
+            return String.valueOf(originalPriceNum.multiply((BigDecimal.ONE.subtract(discountNum.divide(BigDecimal.valueOf(100))))));
         }
     }
 

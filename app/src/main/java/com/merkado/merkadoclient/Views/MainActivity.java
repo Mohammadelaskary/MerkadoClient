@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
@@ -20,6 +21,8 @@ import androidx.room.Room;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.merkado.merkadoclient.Adapters.BottomNavPagerAdapter;
 import com.merkado.merkadoclient.Database.MyDatabase;
 import com.merkado.merkadoclient.Fragments.CartFragment;
@@ -46,7 +49,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.util.HashMap;
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(binding.getRoot());
         deleteDatabase("Database");
         dataBase = Room.databaseBuilder(this, MyDatabase.class, "Database")
@@ -161,25 +164,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void uploadToken() {
-        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
-            String token = instanceIdResult.getToken();
-            Map<String, Object> map = new HashMap<>();
-            map.put("messagingToken", token);
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-            Query query = reference.orderByKey().equalTo(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid());
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren())
-                        dataSnapshot.getRef().updateChildren(map);
-                }
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
+            @Override
+            public void onComplete(@NonNull com.google.android.gms.tasks.Task<String> task) {
+                String token = FirebaseMessaging.getInstance().getToken().getResult();
+                Map<String, Object> map = new HashMap<>();
+                map.put("messagingToken", token);
+                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+                Query query = reference.orderByKey().equalTo(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid());
+                query.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot dataSnapshot : snapshot.getChildren())
+                            dataSnapshot.getRef().updateChildren(map);
+                    }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
 
-                }
-            });
+                    }
+                });
+            }
         });
+
     }
 
     private void checkForUpdates() {
@@ -384,5 +391,27 @@ public class MainActivity extends AppCompatActivity {
                 allProductsFinishedLoading = aBoolean;
             }
         });
+    }
+    public static String convertToEnglishDigits(String value)
+    {
+        String newValue = value.replace("۱", "1").replace("۲", "2").replace("۳", "3").replace("۴", "4").replace("۵", "5")
+                .replace("۶", "6").replace("۷", "7").replace("۸", "8").replace("۹", "9").replace("۰", "0")
+                ;
+//        String newValue2 = newValue.replace("٫",".");
+        return newValue;
+    }
+    private static final String arabic = "\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9";
+    public static String arabicToDecimal(String number) {
+        char[] chars = new char[number.length()];
+        for(int i=0;i<number.length();i++) {
+            char ch = number.charAt(i);
+            if (ch >= 0x0660 && ch <= 0x0669)
+                ch -= 0x0660 - '0';
+            else if (ch >= 0x06f0 && ch <= 0x06F9)
+                ch -= 0x06f0 - '0';
+            chars[i] = ch;
+        }
+        String res = new String(chars).replace("٫",".");
+        return res;
     }
 }
