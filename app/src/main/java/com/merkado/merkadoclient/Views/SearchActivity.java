@@ -98,7 +98,11 @@ public class SearchActivity extends AppCompatActivity {
             public void onChanged(List<Product> products) {
                 allProducts.clear();
                 binding.progressBar.hide();
-                allProducts.addAll(products);
+                for (Product product:products){
+                    if (product.isVisible())
+                        allProducts.add(product);
+                }
+
                 initProductsResult();
                 adapter.notifyDataSetChanged();
             }

@@ -7,11 +7,21 @@ import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 import com.merkado.merkadoclient.Database.OrderCost;
 import com.merkado.merkadoclient.Database.ProductOrder;
 import com.merkado.merkadoclient.Database.ShippingData;
@@ -20,13 +30,6 @@ import com.merkado.merkadoclient.Model.Neighborhood;
 import com.merkado.merkadoclient.Model.User;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
 import com.merkado.merkadoclient.databinding.ActivityOrderSentBinding;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.math.BigDecimal;
@@ -52,14 +55,14 @@ public class OrderSent extends AppCompatActivity {
     String myPromoCode;
     boolean deserveDiscount;
     User myData;
-    String id;
+    int id;
     HomeViewModel homeViewModel;
     ActivityOrderSentBinding binding;
     String promoCodeId;
     String promoCode;
     int promoCodeHolderCount;
     int subtractedPoints, myPoints;
-    boolean allProductsAvailable = true;
+    FullOrder fullOrder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,17 +112,17 @@ public class OrderSent extends AppCompatActivity {
 
     private void uploadOrder(FullOrder order) {
 
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Orders");
-            reference.push().setValue(order);
-            decrementProductsAmount();
-            changeDeserveDiscountStatus();
-            addPointToCurrentUser();
-            getAllSerials();
-            if (subtractedPoints != 0)
-                subtractPoints(subtractedPoints);
-            MainActivity.dataBase.myDao().deleteAllShippingData();
-            MainActivity.dataBase.myDao().deleteAllOrderCost();
-            MainActivity.dataBase.myDao().deleteAllOrders();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Orders");
+        reference.push().setValue(order);
+        decrementProductsAmount();
+        changeDeserveDiscountStatus();
+        addPointToCurrentUser();
+        getAllSerials();
+        if (subtractedPoints != 0)
+            subtractPoints(subtractedPoints);
+        MainActivity.dataBase.myDao().deleteAllShippingData();
+        MainActivity.dataBase.myDao().deleteAllOrderCost();
+        MainActivity.dataBase.myDao().deleteAllOrders();
 
 
     }
@@ -162,12 +165,9 @@ public class OrderSent extends AppCompatActivity {
     }
 
     private void getAllSerials() {
-        homeViewModel.getAllSerialsLiveData().observe(this, new Observer<List<String>>() {
-            @Override
-            public void onChanged(List<String> strings) {
-                allSerials.clear();
-                allSerials.addAll(strings);
-            }
+        homeViewModel.getAllSerialsLiveData().observe(this, strings -> {
+            allSerials.clear();
+            allSerials.addAll(strings);
         });
     }
 
@@ -196,108 +196,130 @@ public class OrderSent extends AppCompatActivity {
 
     private void decrementProductsAmount() {
         for (ProductOrder orderProduct : orderProducts) {
-            BigDecimal orderedAmount = new  BigDecimal(orderProduct.getOrdered());
-            BigDecimal availableAmount = new  BigDecimal(orderProduct.getAvailable());
+            BigDecimal orderedAmount = new BigDecimal(orderProduct.getOrdered());
+            BigDecimal availableAmount = new BigDecimal(orderProduct.getAvailable());
             String productName = orderProduct.getProductName();
 
-                availableAmount = availableAmount.subtract(orderedAmount);
-                Map<String, Object> newAvailableAmount = new HashMap<>();
-                newAvailableAmount.put("availableAmount", availableAmount.toString());
-                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Products");
-                Query query = reference.orderByChild("productName").equalTo(productName);
-                query.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot dataSnapshot : snapshot.getChildren())
-                            dataSnapshot.getRef().updateChildren(newAvailableAmount);
-                    }
+            availableAmount = availableAmount.subtract(orderedAmount);
+            Map<String, Object> newAvailableAmount = new HashMap<>();
+            newAvailableAmount.put("availableAmount", availableAmount.toString());
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Products");
+            Query query = reference.orderByChild("productName").equalTo(productName);
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot dataSnapshot : snapshot.getChildren())
+                        dataSnapshot.getRef().updateChildren(newAvailableAmount);
+                }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-                    }
-                });
+                }
+            });
 
-            }
+        }
 
     }
 
 
-
     private void getAllNeighborhoods() {
-        homeViewModel.getNeighborhoodLiveData().observe(this, new Observer<List<Neighborhood>>() {
-            @Override
-            public void onChanged(List<Neighborhood> neighborhoods) {
-                neighborhoodsList.clear();
-                for (Neighborhood neighborhood : neighborhoods) {
-                    neighborhoodsList.add(neighborhood.getNeighborhood());
-                    Log.d("orderSent neifromdb", "onChanged: " + "'" + neighborhood.getNeighborhood() + "'");
-                }
-                BigDecimal sumValue = new  BigDecimal(orderCost.get(orderCost.size() - 1).getSum());
-                BigDecimal discountValue = new  BigDecimal(orderCost.get(orderCost.size() - 1).getDiscount());
-                BigDecimal overAllDiscount = new  BigDecimal(orderCost.get(orderCost.size() - 1).getOverAllDiscount());
-                BigDecimal shippingFee = new  BigDecimal(orderCost.get(orderCost.size() - 1).getShippingFee());
-                BigDecimal totalCost = new  BigDecimal(orderCost.get(orderCost.size() - 1).getTotalCost());
-                String username = shippingData.get(shippingData.size() - 1).getUsername();
-                String mobileNumber = shippingData.get(shippingData.size() - 1).getMobileNumber();
-                String phoneNumber = shippingData.get(shippingData.size() - 1).getPhoneNumber();
-                String address = shippingData.get(shippingData.size() - 1).getAddress();
-                Log.d("orderSent address", "onCreate: " + address);
+        //            }
+        homeViewModel.getNeighborhoodLiveData().observe(this, neighborhoods -> {
+            neighborhoodsList.clear();
+            for (Neighborhood neighborhood : neighborhoods) {
+                neighborhoodsList.add(neighborhood.getNeighborhood());
+                Log.d("orderSent neifromdb", "onChanged: " + "'" + neighborhood.getNeighborhood() + "'");
+            }
+            BigDecimal sumValue = new BigDecimal(orderCost.get(orderCost.size() - 1).getSum());
+            BigDecimal discountValue = new BigDecimal(orderCost.get(orderCost.size() - 1).getDiscount());
+            BigDecimal overAllDiscount = new BigDecimal(orderCost.get(orderCost.size() - 1).getOverAllDiscount());
+            BigDecimal shippingFee = new BigDecimal(orderCost.get(orderCost.size() - 1).getShippingFee());
+            BigDecimal totalCost = new BigDecimal(orderCost.get(orderCost.size() - 1).getTotalCost());
+            String username = shippingData.get(shippingData.size() - 1).getUsername();
+            String mobileNumber = shippingData.get(shippingData.size() - 1).getMobileNumber();
+            String phoneNumber = shippingData.get(shippingData.size() - 1).getPhoneNumber();
+            String address = shippingData.get(shippingData.size() - 1).getAddress();
+            Log.d("orderSent address", "onCreate: " + address);
 
-                String userCity = shippingData.get(shippingData.size() - 1).getCity();
-                Log.d("orderSent neighborhood", "onCreate: " + userCity);
+            String userCity = shippingData.get(shippingData.size() - 1).getCity();
+            Log.d("orderSent neighborhood", "onCreate: " + userCity);
 //                if (!neighborhoodsList.contains(userCity)) {
 //                    binding.apologize.setVisibility(View.VISIBLE);
 //                    binding.orderSent.setVisibility(View.GONE);
 //                } else {
-                    binding.apologize.setVisibility(View.GONE);
-                    binding.orderSent.setVisibility(View.VISIBLE);
-                    boolean promoCodeUsedBefore = allSerials.contains(getSerialNumber());
-                    if (promoCodeUsedBefore)
-                        FancyToast.makeText(OrderSent.this, "تم استخدام كود الأصدقاء على هذا الجهاز من قبل !", FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
-                    if (promoCodes.contains(promoCode) && !promoCode.equals(myPromoCode) && deserveDiscount && !promoCodeUsedBefore) {
-                        binding.congrat.setVisibility(View.VISIBLE);
-                        totalCost =totalCost.subtract( shippingFee);
-                        shippingFee = BigDecimal.ZERO;
-                        incremantCount();
-                        String serialNumber = getSerialNumber();
-                        addSerialNumber(serialNumber);
-                    } else {
-                        binding.congrat.setVisibility(View.GONE);
-                    }
-                    String finalCostText = "حسابك " + totalCost;
-                    binding.finalCost.setText(finalCostText);
-                    Date c = Calendar.getInstance().getTime();
+            binding.apologize.setVisibility(View.GONE);
+            binding.orderSent.setVisibility(View.VISIBLE);
+            boolean promoCodeUsedBefore = allSerials.contains(getSerialNumber());
+            if (promoCodeUsedBefore)
+                FancyToast.makeText(OrderSent.this, "تم استخدام كود الأصدقاء على هذا الجهاز من قبل !", FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
+            if (promoCodes.contains(promoCode) && !promoCode.equals(myPromoCode) && deserveDiscount && !promoCodeUsedBefore) {
+                binding.congrat.setVisibility(View.VISIBLE);
+                totalCost = totalCost.subtract(shippingFee);
+                shippingFee = BigDecimal.ZERO;
+                incremantCount();
+                String serialNumber = getSerialNumber();
+                addSerialNumber(serialNumber);
+            } else {
+                binding.congrat.setVisibility(View.GONE);
+            }
+            String finalCostText = "حسابك " + totalCost;
+            binding.finalCost.setText(finalCostText);
+            Date c = Calendar.getInstance().getTime();
 
-                    SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
-                    String formattedDate = df.format(c);
-                    SimpleDateFormat df1 = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
-                    String formattedTime = df1.format(c);
-                    String id = mobileNumber + " " + c;
-                    String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-                    FullOrder fullOrder = new FullOrder(formattedDate,
-                            formattedTime,
-                            false,
-                            false,
-                            false,
-                            username,
-                            mobileNumber,
-                            phoneNumber,
-                            address,
-                            orderProducts,
-                            sumValue.toString(),
-                            discountValue.toString(),
-                            overAllDiscount.toString(),
-                            shippingFee.toString(),
-                            totalCost.toString(),
-                            userId,
-                            true);
-                    fullOrder.setId(id);
-                    uploadOrder(fullOrder);
-                }
-//            }
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
+            String formattedDate = df.format(c);
+            SimpleDateFormat df1 = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
+            String formattedTime = df1.format(c);
+            String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+            fullOrder = new FullOrder(formattedDate,
+                    formattedTime,
+                    false,
+                    false,
+                    false,
+                    username,
+                    mobileNumber,
+                    phoneNumber,
+                    address,
+                    orderProducts,
+                    sumValue.toString(),
+                    discountValue.toString(),
+                    overAllDiscount.toString(),
+                    shippingFee.toString(),
+                    totalCost.toString(),
+                    userId,
+                    true);
+            getOrderId();
+
         });
     }
+
+    private void getOrderId() {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Last Id");
+        reference.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(final MutableData currentData) {
+                if (currentData.getValue() == null) {
+                    currentData.setValue(1);
+                } else {
+                    currentData.setValue((Long) currentData.getValue() + 1);
+                }
+
+                return Transaction.success(currentData);
+            }
+
+            @Override
+            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+               if (currentData!=null) {
+                   id = currentData.getValue(Integer.class);
+                   fullOrder.setId(id);
+                   uploadOrder(fullOrder);
+               }
+
+            }
+        });
+    }
+
 
     private void addSerialNumber(String serialNumber) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Serials");
@@ -345,15 +367,12 @@ public class OrderSent extends AppCompatActivity {
     }
 
     private void getAllUserData() {
-        homeViewModel.getAllUsers().observe(this, new Observer<List<User>>() {
-            @Override
-            public void onChanged(List<User> users) {
-                allUsers.clear();
-                allUsers.addAll(users);
-                getMyData();
-                getPromoCodeId();
-                getAllPromoCodes();
-            }
+        homeViewModel.getAllUsers().observe(this, users -> {
+            allUsers.clear();
+            allUsers.addAll(users);
+            getMyData();
+            getPromoCodeId();
+            getAllPromoCodes();
         });
     }
 

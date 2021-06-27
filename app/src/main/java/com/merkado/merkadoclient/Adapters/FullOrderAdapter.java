@@ -76,7 +76,7 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
         final boolean isSeen = ordersList.get(position).isSeen();
         final boolean isShiped = ordersList.get(position).isShiped();
         final BigDecimal shipping = new BigDecimal(ordersList.get(position).getShipping());
-        final String id = ordersList.get(position).getId();
+        final int id = ordersList.get(position).getId();
         final String userId = ordersList.get(position).getUserId();
         holder.customerName.setText(customerName);
         holder.time.setText(time);
@@ -138,7 +138,7 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
         query.getRef().setValue(null);
     }
 
-    private void cancelOrder(String id,int position) {
+    private void cancelOrder(int id,int position) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Orders");
         Query query = reference.orderByChild("id").equalTo(id);
         Map<String,Object> isAvailableMap = new HashMap<>();

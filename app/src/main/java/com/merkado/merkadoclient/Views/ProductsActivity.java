@@ -96,16 +96,19 @@ public class ProductsActivity extends AppCompatActivity {
             public void onChanged(List<Product> products) {
                 productsList.clear();
                 for (Product product : products) {
-                    if (product.getDep().equals(depName) && product.getSubDep().equals(subdep)) {
+                    if (product.getDep().equals(depName) && product.getSubDep().equals(subdep)&&product.isVisible()) {
                         productsList.add(product);
                         adapter.notifyDataSetChanged();
                     }
                 }
 
-                if (productsList.isEmpty())
+                if (productsList.isEmpty()) {
                     binding.noProducts.setVisibility(View.VISIBLE);
-                else
+                    binding.productsNum.setText("0");
+                } else {
                     binding.noProducts.setVisibility(View.GONE);
+                    binding.productsNum.setText(String.valueOf(productsList.size()));
+                }
             }
         });
     }

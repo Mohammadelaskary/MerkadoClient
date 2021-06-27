@@ -79,6 +79,7 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
         String unitWeight = products.get(position).getUnitWeight();
         BigDecimal availableAmount =new BigDecimal(products.get(position).getAvailableAmount());
         boolean mostSold = products.get(position).isMostSold();
+        boolean isAvailable = products.get(position).isAvailable();
         BigDecimal mininumOrderAmount = new BigDecimal(products.get(position).getMinimumOrderAmount());
         String finalPrice = originalPrice;
         if (!discount.isEmpty())
@@ -86,7 +87,13 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
         String fullDiscountText = "خصم " + discount + " " + discountUnit;
         String originalPriceText = "بدلا من " + originalPrice + "جنيه";
         String finalPriceText = finalPrice + "جنيه / " + unitWeight;
-
+        if (!isAvailable){
+            holder.unavailableLayout.setVisibility(View.VISIBLE);
+            holder.unavailableText.setText("غير متاح مؤقتا");
+            holder.addCart.setClickable(false);
+        } else {
+            holder.unavailableLayout.setVisibility(View.GONE);
+        }
         if (imageUrl.isEmpty())
             holder.productImage.setImageResource(R.drawable.no_image);
         else
@@ -172,11 +179,9 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
             @Override
             public void onClick(View view) {
                 increamentCart(productName, holder.orderedAmount, false, availableAmount,mininumOrderAmount);
-                BigDecimal newValue = getOrderedAmount(productName).add(BigDecimal.ONE);
-                if (newValue.compareTo(BigDecimal.ZERO) <= 0) {
+                if (getOrderedAmount(productName).subtract(mininumOrderAmount).compareTo(BigDecimal.ZERO) <= 0) {
                     holder.addCart.setVisibility(View.VISIBLE);
                     holder.addRemoveCart.setVisibility(View.GONE);
-                    removeFromCart(productName);
                 }
             }
         });
@@ -261,7 +266,7 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
             newValue = getOrderedAmount(productName).subtract(minimumOrderAmount);
         if (newValue.compareTo(availableAmount) <= 0) {
             Map<String, Object> map = new HashMap<>();
-            map.put("numberOfProducts", newValue);
+            map.put("numberOfProducts", newValue.toString());
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Cart").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
             Query query = reference.orderByChild("productName").equalTo(productName);
             query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -269,10 +274,10 @@ public class ProductsSearchAdapter extends RecyclerView.Adapter<ProductsSearchAd
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     for (DataSnapshot dataSnapshot : snapshot.getChildren())
                         dataSnapshot.getRef().updateChildren(map);
-                    orderedAmount.setText(String.valueOf(newValue));
-                    if (newValue.compareTo(BigDecimal.ZERO) <= 0)
+                    orderedAmount.setText(newValue.toString());
+                    if (newValue.compareTo(BigDecimal.ZERO) <= 0 )
                         removeFromCart(productName);
-                    Log.d("availableAmount", availableAmount + "");
+                    Log.d("newValue", newValue + "");
                 }
 
                 @Override

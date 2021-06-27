@@ -17,7 +17,8 @@ public class Product {
     private String count;
     private boolean todaysOffer;
     private boolean mostSold;
-
+    private boolean isVisible;
+    private boolean isAvailable;
     private String minimumOrderAmount;
     private int position;
 
@@ -167,4 +168,19 @@ public class Product {
         this.position = position;
     }
 
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    public void setVisible(boolean visible) {
+        isVisible = visible;
+    }
+
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
+    }
 }

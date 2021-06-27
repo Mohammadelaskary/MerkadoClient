@@ -464,8 +464,8 @@ public class Repository {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Contact contact = snapshot.getValue(Contact.class);
-                assert contact != null;
-                phoneNumberLivData.postValue(contact.getPhoneNumber());
+                if (contact != null)
+                    phoneNumberLivData.postValue(contact.getPhoneNumber());
             }
 
             @Override

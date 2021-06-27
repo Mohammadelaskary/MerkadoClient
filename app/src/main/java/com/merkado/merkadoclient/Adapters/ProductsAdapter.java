@@ -78,6 +78,8 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.Produc
         BigDecimal availableAmount = new BigDecimal(products.get(position).getAvailableAmount());
         boolean mostSold = products.get(position).isMostSold();
         boolean istodayoffer = products.get(position).isTodaysOffer();
+        boolean isVisible = products.get(position).isVisible();
+        boolean isAvailable = products.get(position).isAvailable();
         BigDecimal mininumOrderAmount = new BigDecimal(products.get(position).getMinimumOrderAmount());
 
 
@@ -130,6 +132,20 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.Produc
             holder.addCart.setClickable(false);
         } else {
             holder.unavailableLayout.setVisibility(View.GONE);
+        }
+
+        if (!isAvailable){
+            holder.unavailableLayout.setVisibility(View.VISIBLE);
+            holder.unavailableText.setText("غير متاح مؤقتا");
+            holder.addCart.setClickable(false);
+        } else {
+            holder.unavailableLayout.setVisibility(View.GONE);
+        }
+
+        if (isVisible){
+            holder.itemView.setVisibility(View.VISIBLE);
+        } else {
+            holder.itemView.setVisibility(View.GONE);
         }
 
         Animation anim = AnimationUtils.loadAnimation(context, R.anim.bounce);

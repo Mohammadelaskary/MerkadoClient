@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.merkado.merkadoclient.Adapters.AdImagesAdapter;
 import com.merkado.merkadoclient.Adapters.ProductsAdapter;
 import com.merkado.merkadoclient.Model.AdImages;
@@ -31,11 +32,9 @@ import com.merkado.merkadoclient.Model.Product;
 import com.merkado.merkadoclient.MyMethods;
 import com.merkado.merkadoclient.R;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
-import com.facebook.shimmer.ShimmerFrameLayout;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import static android.content.ContentValues.TAG;
@@ -100,9 +99,9 @@ public class HomeFragment extends Fragment {
         discountText = view.findViewById(R.id.discount);
         discountTypeText = view.findViewById(R.id.discount_type);
         mostSoldLayout = view.findViewById(R.id.most_sold_layout);
-        Animation specialOfferanim = AnimationUtils.loadAnimation(context, R.anim.blink_anim);
-        specialOffer.startAnimation(specialOfferanim);
-        if (MyMethods.isConnected(Objects.requireNonNull(getContext()))) {
+//        Animation specialOfferanim = AnimationUtils.loadAnimation(context, R.anim.blink_anim);
+//        specialOffer.startAnimation(specialOfferanim);
+        if (MyMethods.isConnected(requireContext())) {
             getAllProducts();
             getAdImages();
             getSpecialOffer();
@@ -127,7 +126,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void getProductsInCart() {
-        homeViewModel.getProductsInCartLiveData().observe(Objects.requireNonNull(getActivity()), new Observer<List<Cart>>() {
+        homeViewModel.getProductsInCartLiveData().observe(requireActivity(), new Observer<List<Cart>>() {
             @Override
             public void onChanged(List<Cart> carts) {
                 productsInCart.clear();
@@ -154,7 +153,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void getAdImages() {
-        homeViewModel.getAdImages().observe(Objects.requireNonNull(getActivity()), new Observer<List<AdImages>>() {
+        homeViewModel.getAdImages().observe(requireActivity(), new Observer<List<AdImages>>() {
             @Override
             public void onChanged(List<AdImages> adImages) {
                 if (!adImages.isEmpty()) {
@@ -212,7 +211,7 @@ public class HomeFragment extends Fragment {
 
     private void getMostSoldProducts() {
         for (Product product : allProducts) {
-            if (product.isMostSold()) {
+            if (product.isMostSold()&&product.isVisible()) {
                 if (!mostSoldProducts.contains(product)) {
                     mostSoldProducts.add(product);
                     mostSoldAdapter.notifyDataSetChanged();
@@ -231,7 +230,7 @@ public class HomeFragment extends Fragment {
     private void getTodayOfferProducts() {
         for (Product product : allProducts) {
             Log.d(TAG, "getTodayOfferProducts: " + product.isTodaysOffer());
-            if (product.isTodaysOffer()) {
+            if (product.isTodaysOffer()&&product.isVisible()) {
                 if (!todayOfferProducts.contains(product)) {
                     todayOfferProducts.add(product);
                     toDayOfferAdapter.notifyDataSetChanged();
@@ -243,12 +242,12 @@ public class HomeFragment extends Fragment {
     }
 
     public void initViewModel() throws ExecutionException, InterruptedException {
-        homeViewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(Objects.requireNonNull(getActivity()).getApplication()).create(HomeViewModel.class);
+        homeViewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().getApplication()).create(HomeViewModel.class);
         homeViewModel.init();
     }
 
     public void getAllProducts() {
-        homeViewModel.getAllProducts().observe(Objects.requireNonNull(getActivity()), new Observer<List<Product>>() {
+        homeViewModel.getAllProducts().observe(requireActivity(), new Observer<List<Product>>() {
             @Override
             public void onChanged(List<Product> products) {
                 allProducts.clear();
@@ -269,7 +268,7 @@ public class HomeFragment extends Fragment {
     }
 
     public void getSpecialOffer() {
-        homeViewModel.getDiscountMutableLiveData().observe(Objects.requireNonNull(getActivity()), new Observer<OverTotalMoneyDiscount>() {
+        homeViewModel.getDiscountMutableLiveData().observe(requireActivity(), new Observer<OverTotalMoneyDiscount>() {
             @Override
             public void onChanged(OverTotalMoneyDiscount overTotalMoneyDiscount) {
                 if (overTotalMoneyDiscount == null)
@@ -289,7 +288,7 @@ public class HomeFragment extends Fragment {
     }
 
     public void switchToDepartmentsFragment() {
-        FragmentManager manager = ((AppCompatActivity) Objects.requireNonNull(getContext())).getSupportFragmentManager();
+        FragmentManager manager = ((AppCompatActivity) requireContext()).getSupportFragmentManager();
         manager.beginTransaction().replace(R.id.fragment_container, new DepartmentsFragment(getContext())).commit();
     }
 

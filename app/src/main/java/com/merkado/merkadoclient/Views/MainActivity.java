@@ -164,26 +164,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void uploadToken() {
-        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
-            @Override
-            public void onComplete(@NonNull com.google.android.gms.tasks.Task<String> task) {
-                String token = FirebaseMessaging.getInstance().getToken().getResult();
-                Map<String, Object> map = new HashMap<>();
-                map.put("messagingToken", token);
-                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-                Query query = reference.orderByKey().equalTo(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid());
-                query.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot dataSnapshot : snapshot.getChildren())
-                            dataSnapshot.getRef().updateChildren(map);
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+//                String token = FirebaseMessaging.getInstance().getToken().getResult();
+//                Map<String, Object> map = new HashMap<>();
+//                map.put("messagingToken", token);
+//                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+//                Query query = reference.orderByKey().equalTo(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid());
+//                query.addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                        for (DataSnapshot dataSnapshot : snapshot.getChildren())
+//                            dataSnapshot.getRef().updateChildren(map);
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError error) {
+//
+//                    }
+//                });
             }
         });
 
