@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="@dimen/_20sdp"
+    android:layoutDirection="rtl">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="اختار صورة.."
+        android:textSize="@dimen/_15ssp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="@dimen/_10sdp"
+        />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/open_camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_photo_camera_24"
+            android:layout_marginEnd="@dimen/_5sdp"
+            android:backgroundTint="@color/colorPrimary"
+            android:padding="@dimen/_15sdp"
+            style="?buttonStyleSmall"
+            android:layout_marginStart="@dimen/_20sdp"/>
+        <ImageButton
+            android:id="@+id/choose_from_gallery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_gallery"
+            android:backgroundTint="@color/colorPrimary"
+            style="?buttonStyleSmall"
+            android:padding="@dimen/_15sdp"
+            android:layout_marginEnd="@dimen/_20sdp"/>
+    </LinearLayout>
+</LinearLayout>

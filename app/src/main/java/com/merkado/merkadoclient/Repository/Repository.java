@@ -6,6 +6,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.firebase.database.Query;
 import com.merkado.merkadoclient.Model.AdImages;
 import com.merkado.merkadoclient.Model.Cart;
 import com.merkado.merkadoclient.Model.Contact;
@@ -13,6 +14,7 @@ import com.merkado.merkadoclient.Model.DepartmentNames;
 import com.merkado.merkadoclient.Model.FullOrder;
 import com.merkado.merkadoclient.Model.Neighborhood;
 import com.merkado.merkadoclient.Model.OverTotalMoneyDiscount;
+import com.merkado.merkadoclient.Model.PharmacyOrder;
 import com.merkado.merkadoclient.Model.PointsDiscount;
 import com.merkado.merkadoclient.Model.Product;
 import com.merkado.merkadoclient.Model.Shipping;
@@ -134,7 +136,32 @@ public class Repository {
         });
         return discountMutableLiveData;
     }
+    public MutableLiveData<List<PharmacyOrder>> getMyPharmacyOrders(){
+        MutableLiveData<List<PharmacyOrder>> pharmacyOrdersLiveData = new MutableLiveData<>();
+        List<PharmacyOrder> pharmacyOrders = new ArrayList<>();
+        if (FirebaseAuth.getInstance().getCurrentUser()!=null) {
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("PharmacyOrders");
+            Query query = reference.orderByChild("userId").equalTo(userId);
+            query.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    pharmacyOrders.clear();
+                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                        PharmacyOrder order = dataSnapshot.getValue(PharmacyOrder.class);
+                        pharmacyOrders.add(order);
+                    }
+                    pharmacyOrdersLiveData.postValue(pharmacyOrders);
+                }
 
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+        return pharmacyOrdersLiveData;
+    }
     public MutableLiveData<List<DepartmentNames>> getDepartmentsNames() {
         final MutableLiveData<List<DepartmentNames>> depNamesLiveData = new MutableLiveData<>();
         final List<DepartmentNames> departmentNames = new ArrayList<>();
@@ -475,5 +502,29 @@ public class Repository {
         });
         return phoneNumberLivData;
     }
+    public MutableLiveData<List<PharmacyOrder>> getMyPharmacyCart (){
+        MutableLiveData<List<PharmacyOrder>> myPharmacyOrdersLiveData = new MutableLiveData<>();
+        List<PharmacyOrder> myPharmacyOrders = new ArrayList<>();
+        if (FirebaseAuth.getInstance().getCurrentUser()!=null) {
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Pharmacy Cart").child(userId);
+            reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    myPharmacyOrders.clear();
+                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                        PharmacyOrder order = dataSnapshot.getValue(PharmacyOrder.class);
+                        myPharmacyOrders.add(order);
+                    }
+                    myPharmacyOrdersLiveData.setValue(myPharmacyOrders);
+                }
 
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+        return myPharmacyOrdersLiveData;
+    }
 }

@@ -1,5 +1,6 @@
 package com.merkado.merkadoclient.Fragments;
 
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,7 +15,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -28,6 +31,7 @@ import com.merkado.merkadoclient.Database.ProductOrder;
 import com.merkado.merkadoclient.Interfaces.OrderProductInterface;
 import com.merkado.merkadoclient.Model.Cart;
 import com.merkado.merkadoclient.Model.OverTotalMoneyDiscount;
+import com.merkado.merkadoclient.Model.PharmacyOrder;
 import com.merkado.merkadoclient.Model.Product;
 import com.merkado.merkadoclient.Model.Shipping;
 import com.merkado.merkadoclient.Model.User;
@@ -36,6 +40,7 @@ import com.merkado.merkadoclient.R;
 import com.merkado.merkadoclient.SwipeToDeleteCallback;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
 import com.merkado.merkadoclient.Views.MainActivity;
+import com.merkado.merkadoclient.Views.PharmacyActivity;
 import com.merkado.merkadoclient.Views.UserData;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.button.MaterialButton;
@@ -53,27 +58,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.function.ObjIntConsumer;
 
 
 public class CartFragment extends Fragment {
 
     Context context;
     RecyclerView cartRec;
-    TextView sum, discount, overAllDiscountTextView, shipping, total, noConnection, useYourPoints1,useYourPoints2;
+    TextView sum, discount, overAllDiscountTextView, shipping, total, noConnection, useYourPoints1,useYourPoints2,totalCostTV,numberOfPharmacyItems;
     HomeViewModel homeViewModel;
     List<ProductOrder> orders = new ArrayList<>();
     List<Product> allProducts = new ArrayList<>();
     List<Cart> productInCart = new ArrayList<>();
+    List<PharmacyOrder> mPharmacyOrders = new ArrayList<>();
     ProductOrdersAdapter productOrdersAdapter;
     OverTotalMoneyDiscount overAllDiscount;
-    MaterialButton discount_option1,discount_option2;
+    MaterialButton discount_option1,discount_option2,pharmacyCart;
+    ContentLoadingProgressBar shippingProgress1,shippingProgress2;
+    LinearLayout redeemDiscount,discountOptions1,discountOptions2,calculations;
 
-    LinearLayout redeemDiscount,discountOptions1,discountOptions2;
-    boolean isPointsDiscountExist1;
-    boolean isPointsDiscountExist2;
-    Shipping shippingFee;
+    Shipping shippingFee ;
     RelativeLayout cartLayout;
     CoordinatorLayout fullLayout;
+    ConstraintLayout pharmacyContainer;
     MaterialButton complete;
     ShimmerFrameLayout shimmerFrameLayout;
     int minPoints,minPoints2;
@@ -95,6 +102,7 @@ public class CartFragment extends Fragment {
     String myId;
     int myPoints;
     boolean allProductsAvailable = true;
+    String pharmacyCost;
 
     public CartFragment() {
     }
@@ -133,6 +141,13 @@ public class CartFragment extends Fragment {
         discountOptions2 = view.findViewById(R.id.discount_options2);
         discount_option1 = view.findViewById(R.id.discount_option1);
         discount_option2 = view.findViewById(R.id.discount_option2);
+        pharmacyContainer = view.findViewById(R.id.pharmacy_container);
+        pharmacyCart      = view.findViewById(R.id.pharmacy);
+        calculations      = view.findViewById(R.id.calculations);
+        totalCostTV       = view.findViewById(R.id.total_sum);
+        numberOfPharmacyItems = view.findViewById(R.id.number_of_pharmacy_items);
+        shippingProgress1 = view.findViewById(R.id.shipping_fee_progress1);
+        shippingProgress2 = view.findViewById(R.id.shipping_fee_progress2);
         MainActivity.dataBase.myDao().deleteAllOrders();
         MainActivity.dataBase.myDao().deleteAllOrderCost();
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
@@ -173,6 +188,7 @@ public class CartFragment extends Fragment {
                                         }
                                         Intent intent = new Intent(getContext(), UserData.class);
                                         intent.putExtra("subtractedPoints", subtractedPoints);
+                                        intent.putExtra("pharmacyCost",pharmacyCost);
                                         context.startActivity(intent);
                                     } else {
                                         FancyToast.makeText(getContext(), "لا يمكن ارسال الطلبات حيث أن العربة فارغة", FancyToast.LENGTH_SHORT, FancyToast.WARNING, false).show();
@@ -187,19 +203,23 @@ public class CartFragment extends Fragment {
 
 
                 } else {
-                    OrderCost cost = new OrderCost(sumValue.toString(), discountValue.toString(), overAllDiscountValue.toString(), shippingValue.toString(), totalCostValue.toString());
-                    MainActivity.dataBase.myDao().addTotalCost(cost);
-                    for (ProductOrder orderProduct:orders){
-                        MainActivity.dataBase.myDao().addOrder(orderProduct);
+                    if (!productInCart.isEmpty()) {
+                        OrderCost cost = new OrderCost(sumValue.toString(), discountValue.toString(), overAllDiscountValue.toString(), shippingValue.toString(), totalCostValue.toString());
+                        MainActivity.dataBase.myDao().addTotalCost(cost);
+                        for (ProductOrder orderProduct : orders) {
+                            MainActivity.dataBase.myDao().addOrder(orderProduct);
+                        }
                     }
                     Intent intent = new Intent(getContext(), UserData.class);
                     intent.putExtra("subtractedPoints", subtractedPoints);
+                    intent.putExtra("pharmacyCost",pharmacyCost);
+//                    Log.d("cost",pharmacyCost);
                     context.startActivity(intent);
                 }
             }
         });
 
-        if (MyMethods.isConnected(Objects.requireNonNull(getContext()))) {
+        if (MyMethods.isConnected(requireContext())) {
             getAllProducts();
             getAllProductsInCart();
             initProductsRec();
@@ -208,7 +228,7 @@ public class CartFragment extends Fragment {
             getPointsDiscount1();
             getPointsDiscount2();
             getAllUsers();
-
+            getPharmacyCart();
             shimmerFrameLayout.startShimmer();
             shimmerFrameLayout.setVisibility(View.VISIBLE);
         } else {
@@ -243,6 +263,18 @@ public class CartFragment extends Fragment {
                         isClicked = true;
                         discount_option2.setEnabled(false);
                         discount_option1.setEnabled(false);
+                        if ( !mPharmacyOrders.isEmpty() && productInCart.isEmpty() ){
+                            if(pointsFreeShipping1){
+                                pharmacyCost = "0";
+                            } else {
+                                BigDecimal finalPharmacyCost = shippingValue.subtract(pointsDiscountValue);
+                                if (finalPharmacyCost.compareTo(BigDecimal.ZERO)<=0)
+                                    pharmacyCost = "0";
+                                else
+                                    pharmacyCost = String.valueOf(finalPharmacyCost);
+                            }
+                            total.setText(pharmacyCost);
+                        }
                     }
                 }
             }
@@ -266,21 +298,84 @@ public class CartFragment extends Fragment {
 
                         }
                         subtractedPoints = minPoints;
-                       redeemDiscount.setEnabled(false);
+                        redeemDiscount.setEnabled(false);
                         calculateCosts();
                         isClicked = true;
                         discount_option2.setEnabled(false);
                         discount_option1.setEnabled(false);
+                        if ( !mPharmacyOrders.isEmpty() && productInCart.isEmpty() ){
+                            if(pointsFreeShipping2){
+                                pharmacyCost = "0";
+                            } else {
+                                BigDecimal finalPharmacyCost = shippingValue.subtract(pointsDiscountValue2);
+                                if (finalPharmacyCost.compareTo(BigDecimal.ZERO)<=0)
+                                    pharmacyCost = "0";
+                                else
+                                    pharmacyCost = String.valueOf(finalPharmacyCost);
+                            }
+                            total.setText(pharmacyCost);
+                        }
                     }
                 }
             }
         });
-
+        pharmacyCart.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), PharmacyActivity.class);
+            ActivityOptions options =
+                    ActivityOptions.makeCustomAnimation(requireContext(), android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+            startActivity(intent, options.toBundle());
+        });
         return view;
     }
 
+    private void getPharmacyCart() {
+        homeViewModel.getMyPharmacyCart().observe(requireActivity(),pharmacyOrders -> {
+            mPharmacyOrders.clear();
+            mPharmacyOrders.addAll(pharmacyOrders);
+            if (mPharmacyOrders.isEmpty()){
+                pharmacyContainer.setVisibility(View.GONE);
+            } else {
+                pharmacyContainer.setVisibility(View.VISIBLE);
+                numberOfPharmacyItems.setText(mPharmacyOrders.size()+"");
+            }
+            handleCartSections();
+        });
+    }
+
+    private void handleCartSections() {
+        int pharmacyCartNumberOfItems = mPharmacyOrders.size();
+        int cartNumberOfProducts      = productInCart.size();
+        Log.d("phCart",pharmacyCartNumberOfItems+"");
+        Log.d("cart",cartNumberOfProducts+"");
+        if (pharmacyCartNumberOfItems != 0 && cartNumberOfProducts != 0){
+            cartLayout.setVisibility(View.VISIBLE);
+            noConnection.setVisibility(View.GONE);
+            noConnection.setText("العربة فارغة");
+        } else if (pharmacyCartNumberOfItems == 0 && cartNumberOfProducts != 0) {
+            cartLayout.setVisibility(View.VISIBLE);
+//            pharmacyContainer.setVisibility(View.GONE);
+            calculations.setVisibility(View.VISIBLE);
+            totalCostTV.setText("الحساب الإجمالي:");
+            noConnection.setVisibility(View.GONE);
+        } else if ( pharmacyCartNumberOfItems != 0 ) {
+            cartLayout.setVisibility(View.VISIBLE);
+            pharmacyContainer.setVisibility(View.VISIBLE);
+            calculations.setVisibility(View.GONE);
+            totalCostTV.setText("خدمة التوصيل:");
+            if (shippingFee != null)
+                pharmacyCost = shippingFee.getShippingFee();
+                total.setText(pharmacyCost);
+            noConnection.setVisibility(View.GONE);
+            numberOfPharmacyItems.setText(String.valueOf(pharmacyCartNumberOfItems));
+        } else {
+            cartLayout.setVisibility(View.GONE);
+            noConnection.setVisibility(View.VISIBLE);
+            noConnection.setText("العربة فارغة");
+        }
+    }
+
     private void getPointsDiscount1() {
-        homeViewModel.getPointsDiscountMutableLiveData1().observe(Objects.requireNonNull(getActivity()),
+        homeViewModel.getPointsDiscountMutableLiveData1().observe(requireActivity(),
                 pointsDiscount -> {
                 if (pointsDiscount != null) {
                     pointsFreeShipping1 = pointsDiscount.isFreeShipping();
@@ -307,7 +402,7 @@ public class CartFragment extends Fragment {
                 });
     }
     private void getPointsDiscount2() {
-        homeViewModel.getPointsDiscountMutableLiveData2().observe(Objects.requireNonNull(getActivity()),
+        homeViewModel.getPointsDiscountMutableLiveData2().observe(requireActivity(),
                 pointsDiscount -> {
                     if (pointsDiscount != null) {
                         pointsFreeShipping2 = pointsDiscount.isFreeShipping();
@@ -335,42 +430,6 @@ public class CartFragment extends Fragment {
                         discountOptions2.setVisibility(View.GONE);
                 });
     }
-//    private void getPointsDiscountExist1() {
-//        homeViewModel.getIspointsDiscountExist1().observe(Objects.requireNonNull(getActivity()),
-//                new Observer<Boolean>() {
-//                    @Override
-//                    public void onChanged(Boolean aBoolean) {
-//                        isPointsDiscountExist1 = aBoolean;
-//
-//                    }
-//                });
-//    }
-//    private void getPointsDiscountExist2() {
-//        homeViewModel.getIspointsDiscountExist2().observe(Objects.requireNonNull(getActivity()),
-//                new Observer<Boolean>() {
-//                    @Override
-//                    public void onChanged(Boolean aBoolean) {
-//                        isPointsDiscountExist2 = aBoolean;
-//                        Log.d("pointsDiscount1",isPointsDiscountExist1+"");
-//                        Log.d("pointsDiscount2",isPointsDiscountExist2+"");
-//                        if (isPointsDiscountExist1||isPointsDiscountExist2)
-//                            redeemDiscount.setVisibility(View.VISIBLE);
-//                        else
-//                            redeemDiscount.setVisibility(View.GONE);
-//                        if (isPointsDiscountExist1) {
-//                            discountOptions1.setVisibility(View.VISIBLE);
-//                            getPointsDiscount1();
-//                        } else
-//                            discountOptions1.setVisibility(View.GONE);
-//                        if (isPointsDiscountExist2) {
-//                            discountOptions2.setVisibility(View.VISIBLE);
-//                            getPointsDiscount2();
-//                        } else
-//                            discountOptions2.setVisibility(View.GONE);
-//                    }
-//                });
-//    }
-
     private void initProductsRec() {
         productOrdersAdapter = new ProductOrdersAdapter(getContext(), orders);
         cartRec.setAdapter(productOrdersAdapter);
@@ -386,9 +445,8 @@ public class CartFragment extends Fragment {
         }));
         itemTouchHelper.attachToRecyclerView(cartRec);
     }
-
     private void getAllUsers() {
-        homeViewModel.getAllUsers().observe(Objects.requireNonNull(getActivity()), new Observer<List<User>>() {
+        homeViewModel.getAllUsers().observe(requireActivity(), new Observer<List<User>>() {
             @Override
             public void onChanged(List<User> users) {
                 allUsers.clear();
@@ -432,18 +490,7 @@ public class CartFragment extends Fragment {
 
         }
         calculateCosts();
-//          for (Cart cart:productInCart){
-//              for (int i = 0; i <orders.size() ; i++) {
-//                  if (cart.getProductName().equals(orders.get(i).getProductName())) {
-//                      break;
-//                  }  else {
-//                      if (i == orders.size()-1||orders.get(i).getAvailableAmount()<=0) {
-//                          removeFromCart(cart.getProductName());
-//                          Log.d("removedProduct", cart.getProductName());
-//                      }
-//                  }
-//              }
-//          }
+
     }
 
     private void removeFromCart(String productName) {
@@ -471,12 +518,12 @@ public class CartFragment extends Fragment {
     }
 
     public void initViewModel() throws ExecutionException, InterruptedException {
-        homeViewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(Objects.requireNonNull(getActivity()).getApplication()).create(HomeViewModel.class);
+        homeViewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().getApplication()).create(HomeViewModel.class);
         homeViewModel.init();
     }
 
     private void getAllProducts() {
-        homeViewModel.getAllProducts().observe(Objects.requireNonNull(getActivity()), new Observer<List<Product>>() {
+        homeViewModel.getAllProducts().observe(requireActivity(), new Observer<List<Product>>() {
             @Override
             public void onChanged(List<Product> products) {
                 allProducts.clear();
@@ -488,7 +535,7 @@ public class CartFragment extends Fragment {
     }
 
     private void getAllProductsInCart() {
-        homeViewModel.getProductsInCartLiveData().observe(Objects.requireNonNull(getActivity()), new Observer<List<Cart>>() {
+        homeViewModel.getProductsInCartLiveData().observe(requireActivity(), new Observer<List<Cart>>() {
             @Override
             public void onChanged(List<Cart> carts) {
                 shimmerFrameLayout.stopShimmer();
@@ -508,7 +555,7 @@ public class CartFragment extends Fragment {
         totalCostValue = BigDecimal.ZERO;
         shippingValue = BigDecimal.valueOf(10);
         if (!productInCart.isEmpty()) {
-            cartLayout.setVisibility(View.VISIBLE);
+            handleCartSections();
             noConnection.setVisibility(View.GONE);
             if (shippingFee != null) {
                 shippingValue = new BigDecimal(shippingFee.getShippingFee());
@@ -555,7 +602,7 @@ public class CartFragment extends Fragment {
             total.setText(String.valueOf(totalCostValue));
 
         } else {
-            cartLayout.setVisibility(View.GONE);
+            handleCartSections();
             noConnection.setVisibility(View.VISIBLE);
             noConnection.setText("العربة فارغة");
         }
@@ -563,7 +610,7 @@ public class CartFragment extends Fragment {
     }
 
     public void getOverTotalMoneyDiscount() {
-        homeViewModel.getDiscountMutableLiveData().observe(Objects.requireNonNull(getActivity()), new Observer<OverTotalMoneyDiscount>() {
+        homeViewModel.getDiscountMutableLiveData().observe(requireActivity(), new Observer<OverTotalMoneyDiscount>() {
             @Override
             public void onChanged(OverTotalMoneyDiscount overTotalMoneyDiscount) {
                 overAllDiscount = overTotalMoneyDiscount;
@@ -572,10 +619,19 @@ public class CartFragment extends Fragment {
     }
 
     public void getShippingFee() {
-        homeViewModel.getShippingMutableLiveData().observe(Objects.requireNonNull(getActivity()), new Observer<Shipping>() {
+        homeViewModel.getShippingMutableLiveData().observe(requireActivity(), new Observer<Shipping>() {
             @Override
             public void onChanged(Shipping shipping) {
                 shippingFee = shipping;
+                shippingProgress1.hide();
+                shippingProgress2.hide();
+                complete.setEnabled(true);
+                if (mPharmacyOrders.size() !=0 && productInCart.size()==0){
+                    pharmacyCost = shippingFee.getShippingFee();
+                    Log.d("shcost",pharmacyCost);
+                    total.setText(pharmacyCost);
+
+                }
             }
         });
     }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.merkado.merkadoclient.Adapters.FullOrderAdapter;
 import com.merkado.merkadoclient.Model.FullOrder;
+import com.merkado.merkadoclient.Model.Order;
+import com.merkado.merkadoclient.Model.PharmacyOrder;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
 import com.merkado.merkadoclient.databinding.ActivityOrdersBinding;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,11 +27,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
+import static android.content.ContentValues.TAG;
+
 public class OrdersActivity extends AppCompatActivity {
     ActivityOrdersBinding binding;
     List<FullOrder> list = new ArrayList<>();
-    List<FullOrder> preList = new ArrayList<>();
-
+    List<PharmacyOrder> myPharmacyOrders = new ArrayList<>();
+    List<Order> orders = new ArrayList<>();
     FullOrderAdapter adapter;
     HomeViewModel homeViewModel;
 
@@ -50,8 +55,7 @@ public class OrdersActivity extends AppCompatActivity {
             }
             isFinishedLoading();
             getCurrentOrders();
-//            getPreOrders();
-            adapter = new FullOrderAdapter(this, list, true);
+            adapter = new FullOrderAdapter(this, orders, true);
             binding.fullOrderRecycler.setAdapter(adapter);
             binding.fullOrderRecycler.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, true));
             binding.fullOrderRecycler.setHasFixedSize(true);
@@ -63,25 +67,65 @@ public class OrdersActivity extends AppCompatActivity {
 
     }
 
-//    private void getPreOrders() {
-//        homeViewModel.getAllPreOrdersLiveData().observe(OrdersActivity.this, new Observer<List<FullOrder>>() {
-//            @Override
-//            public void onChanged(List<FullOrder> fullOrders) {
-//
-//                preList.clear();
-//                for (FullOrder order:fullOrders){
-//                    Log.d(TAG, "done");
-//
-//                    if (order.getUserId().equals(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid())){
-//                        preList.add(order);
-//                    }
-//                }
-//                list.addAll(preList);
-//                adapter.notifyDataSetChanged();
-//                binding.progressBar.hide();
-//            }
-//        });
-//    }
+    private void addOrdersToList() {
+        List<Integer> ordersIds = new ArrayList<>();
+        for (FullOrder order:list){
+            int id = order.getId();
+            if (!ordersIds.contains(id)) {
+                ordersIds.add(id);
+            }
+        }
+
+        if (!myPharmacyOrders.isEmpty()) {
+            for (PharmacyOrder pharmacyOrder : myPharmacyOrders) {
+                int id = Integer.parseInt(pharmacyOrder.getOrderId());
+                if (!ordersIds.contains(id)) {
+                    ordersIds.add(id);
+                }
+            }
+        }
+        for (int id:ordersIds){
+            Order order = new Order(id);
+                for (FullOrder fullOrder : list) {
+                    int orderId = fullOrder.getId();
+                    if (orderId == id) {
+                        order.setFullOrder(fullOrder);
+                        break;
+                    }
+                }
+            List<PharmacyOrder> pharmacyOrders = new ArrayList<>();
+            if (!myPharmacyOrders.isEmpty()) {
+                for (PharmacyOrder pharmacyOrder : myPharmacyOrders) {
+                    int orderId = Integer.parseInt(pharmacyOrder.getOrderId());
+                    if (orderId == id) {
+                        pharmacyOrders.add(pharmacyOrder);
+                    }
+                }
+            }
+            order.setPharmacyOrders(pharmacyOrders);
+            orders.add(order);
+            adapter.notifyDataSetChanged();
+        }
+
+    }
+
+
+    void  getMyPharmacyOrders(){
+        homeViewModel.getMyPharmacyOrders().observe(this,pharmacyOrders -> {
+            if (!pharmacyOrders.isEmpty()) {
+                myPharmacyOrders.clear();
+                myPharmacyOrders.addAll(pharmacyOrders);
+                binding.noOrdersText.setVisibility(View.GONE);
+                binding.noOrdersText.setText("لا يوجد طلبات ...");
+                binding.noOrders.setVisibility(View.GONE);
+            } else {
+                binding.noOrdersText.setVisibility(View.VISIBLE);
+                binding.noOrdersText.setText("لا يوجد طلبات ...");
+                binding.noOrders.setVisibility(View.VISIBLE);
+            }
+            addOrdersToList();
+        });
+    }
 
 
     void getCurrentOrders() {
@@ -90,21 +134,23 @@ public class OrdersActivity extends AppCompatActivity {
             public void onChanged(List<FullOrder> fullOrders) {
                 if (!fullOrders.isEmpty()) {
                     list.clear();
-                    binding.progressBar.hide();
                     for (FullOrder order : fullOrders) {
                         if (order.getUserId().equals(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid())) {
                             list.add(order);
-                            adapter.notifyDataSetChanged();
+
                         }
                     }
-                    binding.fullOrderRecycler.setVisibility(View.VISIBLE);
+                    Log.d(TAG, "ordersSize "+list.size());
+                    getMyPharmacyOrders();
+                    binding.noOrdersText.setVisibility(View.GONE);
+                    binding.noOrdersText.setText("لا يوجد طلبات ...");
+                    binding.noOrders.setVisibility(View.GONE);
                 } else {
-
-                    binding.progressBar.hide();
                     binding.noOrdersText.setVisibility(View.VISIBLE);
                     binding.noOrdersText.setText("لا يوجد طلبات ...");
                     binding.noOrders.setVisibility(View.VISIBLE);
                 }
+                binding.progressBar.hide();
 
             }
         });

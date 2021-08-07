@@ -10,6 +10,7 @@ import com.merkado.merkadoclient.Model.DepartmentNames;
 import com.merkado.merkadoclient.Model.FullOrder;
 import com.merkado.merkadoclient.Model.Neighborhood;
 import com.merkado.merkadoclient.Model.OverTotalMoneyDiscount;
+import com.merkado.merkadoclient.Model.PharmacyOrder;
 import com.merkado.merkadoclient.Model.PointsDiscount;
 import com.merkado.merkadoclient.Model.Product;
 import com.merkado.merkadoclient.Model.Shipping;
@@ -45,6 +46,12 @@ public class HomeViewModel extends ViewModel {
     private MutableLiveData<List<String>> allSerialsLiveData;
     private MutableLiveData<String> getPhoneNumber;
     private MutableLiveData<Boolean> allUsersFinishLoading;
+    private MutableLiveData<List<PharmacyOrder>> myPharmacyCart;
+    private MutableLiveData<List<PharmacyOrder>> myPharmacyOrders;
+
+    public LiveData<List<PharmacyOrder>> getMyPharmacyOrders() {
+        return myPharmacyOrders;
+    }
 
     public LiveData<Boolean> getAllUsersFinishLoading() {
         return allUsersFinishLoading;
@@ -113,11 +120,6 @@ public class HomeViewModel extends ViewModel {
         return depNamesLiveData;
     }
 
-    public LiveData<Boolean> getSpecialOfferFinishLoading() {
-        return specialOfferFinishLoading;
-    }
-
-
     public LiveData<OverTotalMoneyDiscount> getDiscountMutableLiveData() {
         return discountMutableLiveData;
     }
@@ -143,6 +145,10 @@ public class HomeViewModel extends ViewModel {
 
     public LiveData<List<Cart>> getProductsInCartLiveData() {
         return productsInCartLiveData;
+    }
+
+    public LiveData<List<PharmacyOrder>> getMyPharmacyCart() {
+        return myPharmacyCart;
     }
 
     public void init() throws ExecutionException, InterruptedException {
@@ -194,6 +200,11 @@ public class HomeViewModel extends ViewModel {
             return;
         if (allUsersFinishLoading != null)
             return;
+        if (myPharmacyCart != null)
+            return;
+        if (myPharmacyOrders != null)
+            return;
+
         mRepository = Repository.getInstance();
         allProducts = mRepository.getAllProducts();
         allProductsFinishLoading = mRepository.isAllProductsFinishLoading();
@@ -219,6 +230,8 @@ public class HomeViewModel extends ViewModel {
         allSerialsLiveData = mRepository.getAllSerials();
         getPhoneNumber = mRepository.getContactNumber();
         allUsersFinishLoading = mRepository.getAllUsersFinishedLoading();
+        myPharmacyCart = mRepository.getMyPharmacyCart();
+        myPharmacyOrders = mRepository.getMyPharmacyOrders();
     }
 
 

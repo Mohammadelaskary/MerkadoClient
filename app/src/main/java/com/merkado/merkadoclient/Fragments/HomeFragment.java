@@ -1,6 +1,8 @@
 package com.merkado.merkadoclient.Fragments;
 
+import android.app.ActivityOptions;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -9,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -23,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import com.facebook.shimmer.ShimmerFrameLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.merkado.merkadoclient.Adapters.AdImagesAdapter;
 import com.merkado.merkadoclient.Adapters.ProductsAdapter;
 import com.merkado.merkadoclient.Model.AdImages;
@@ -32,6 +36,8 @@ import com.merkado.merkadoclient.Model.Product;
 import com.merkado.merkadoclient.MyMethods;
 import com.merkado.merkadoclient.R;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
+import com.merkado.merkadoclient.Views.PharmacyActivity;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +50,7 @@ public class HomeFragment extends Fragment {
     Context context;
     TextView mostSoldTitle, minimumText, discountText, discountTypeText, noConnection, todayOfferTitle;
     RecyclerView adsRecycler, mostSoldRecycler, todayOfferRecycler;
+    ImageView openPharmacy;
     ShimmerFrameLayout mostSoldShimmer, todayOfferShimmer, adShimmer;
     AdImagesAdapter adImagesAdapter;
     ProductsAdapter mostSoldAdapter;
@@ -99,6 +106,7 @@ public class HomeFragment extends Fragment {
         discountText = view.findViewById(R.id.discount);
         discountTypeText = view.findViewById(R.id.discount_type);
         mostSoldLayout = view.findViewById(R.id.most_sold_layout);
+        openPharmacy = view.findViewById(R.id.open_pharmacy);
 //        Animation specialOfferanim = AnimationUtils.loadAnimation(context, R.anim.blink_anim);
 //        specialOffer.startAnimation(specialOfferanim);
         if (MyMethods.isConnected(requireContext())) {
@@ -118,6 +126,17 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 switchToDepartmentsFragment();
+            }
+        });
+
+        openPharmacy.setOnClickListener(v -> {
+            if (FirebaseAuth.getInstance().getCurrentUser()!=null) {
+                Intent intent = new Intent(getContext(), PharmacyActivity.class);
+                ActivityOptions options =
+                        ActivityOptions.makeCustomAnimation(context, android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+                startActivity(intent, options.toBundle());
+            } else {
+                FancyToast.makeText(getContext(),"يجب تسجيل الدخول أولا..",FancyToast.LENGTH_LONG,FancyToast.WARNING,false).show();
             }
         });
 

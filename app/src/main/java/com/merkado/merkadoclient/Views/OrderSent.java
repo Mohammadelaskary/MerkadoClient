@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,6 +29,7 @@ import com.merkado.merkadoclient.Database.ProductOrder;
 import com.merkado.merkadoclient.Database.ShippingData;
 import com.merkado.merkadoclient.Model.FullOrder;
 import com.merkado.merkadoclient.Model.Neighborhood;
+import com.merkado.merkadoclient.Model.PharmacyOrder;
 import com.merkado.merkadoclient.Model.User;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
 import com.merkado.merkadoclient.databinding.ActivityOrderSentBinding;
@@ -52,6 +55,7 @@ public class OrderSent extends AppCompatActivity {
     List<String> neighborhoodsList = new ArrayList<>();
     List<String> promoCodes = new ArrayList<>();
     List<String> allSerials = new ArrayList<>();
+    List<PharmacyOrder> mPharmacyCart = new ArrayList<>();
     String myPromoCode;
     boolean deserveDiscount;
     User myData;
@@ -59,10 +63,10 @@ public class OrderSent extends AppCompatActivity {
     HomeViewModel homeViewModel;
     ActivityOrderSentBinding binding;
     String promoCodeId;
-    String promoCode;
+    String promoCode,pharmacyCost;
     int promoCodeHolderCount;
     int subtractedPoints, myPoints;
-    FullOrder fullOrder;
+    FullOrder fullOrder = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +77,7 @@ public class OrderSent extends AppCompatActivity {
         Intent intent = getIntent();
         promoCode = intent.getStringExtra("promoCode");
         subtractedPoints = intent.getIntExtra("subtractedPoints", 0);
+        pharmacyCost = intent.getStringExtra("pharmacyCost");
         Log.d("pointsSent", subtractedPoints + "");
         try {
             initViewModel();
@@ -81,7 +86,7 @@ public class OrderSent extends AppCompatActivity {
         }
         getAllUserData();
         getAllNeighborhoods();
-
+        getPharmacyCart();
         orderProducts = MainActivity.dataBase.myDao().getAllOrders();
         shippingData = MainActivity.dataBase.myDao().getAllShippingData();
         orderCost = MainActivity.dataBase.myDao().getAllOrderCost();
@@ -89,6 +94,32 @@ public class OrderSent extends AppCompatActivity {
         deleteMyCart();
 
 
+
+    }
+
+    private void getPharmacyCart() {
+        homeViewModel.getMyPharmacyCart().observe(this,pharmacyOrders -> {
+            mPharmacyCart.clear();
+            mPharmacyCart.addAll(pharmacyOrders);
+        });
+    }
+
+    private void deletePharmacyCart() {
+        String myId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Pharmacy Cart").child(myId);
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    dataSnapshot.getRef().removeValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void deleteMyCart() {
@@ -109,6 +140,8 @@ public class OrderSent extends AppCompatActivity {
             }
         });
     }
+
+
 
     private void uploadOrder(FullOrder order) {
 
@@ -222,7 +255,10 @@ public class OrderSent extends AppCompatActivity {
 
     }
 
+    String username,mobileNumber,phoneNumber,address,userCity,formattedDate,formattedTime;
+    BigDecimal sumValue,discountValue,overAllDiscount,shippingFee,totalCost;
 
+    boolean promoCodeUsedBefore;
     private void getAllNeighborhoods() {
         //            }
         homeViewModel.getNeighborhoodLiveData().observe(this, neighborhoods -> {
@@ -231,46 +267,36 @@ public class OrderSent extends AppCompatActivity {
                 neighborhoodsList.add(neighborhood.getNeighborhood());
                 Log.d("orderSent neifromdb", "onChanged: " + "'" + neighborhood.getNeighborhood() + "'");
             }
-            BigDecimal sumValue = new BigDecimal(orderCost.get(orderCost.size() - 1).getSum());
-            BigDecimal discountValue = new BigDecimal(orderCost.get(orderCost.size() - 1).getDiscount());
-            BigDecimal overAllDiscount = new BigDecimal(orderCost.get(orderCost.size() - 1).getOverAllDiscount());
-            BigDecimal shippingFee = new BigDecimal(orderCost.get(orderCost.size() - 1).getShippingFee());
-            BigDecimal totalCost = new BigDecimal(orderCost.get(orderCost.size() - 1).getTotalCost());
-            String username = shippingData.get(shippingData.size() - 1).getUsername();
-            String mobileNumber = shippingData.get(shippingData.size() - 1).getMobileNumber();
-            String phoneNumber = shippingData.get(shippingData.size() - 1).getPhoneNumber();
-            String address = shippingData.get(shippingData.size() - 1).getAddress();
-            Log.d("orderSent address", "onCreate: " + address);
-
-            String userCity = shippingData.get(shippingData.size() - 1).getCity();
-            Log.d("orderSent neighborhood", "onCreate: " + userCity);
-//                if (!neighborhoodsList.contains(userCity)) {
-//                    binding.apologize.setVisibility(View.VISIBLE);
-//                    binding.orderSent.setVisibility(View.GONE);
-//                } else {
-            binding.apologize.setVisibility(View.GONE);
-            binding.orderSent.setVisibility(View.VISIBLE);
-            boolean promoCodeUsedBefore = allSerials.contains(getSerialNumber());
-            if (promoCodeUsedBefore)
-                FancyToast.makeText(OrderSent.this, "تم استخدام كود الأصدقاء على هذا الجهاز من قبل !", FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
-            if (promoCodes.contains(promoCode) && !promoCode.equals(myPromoCode) && deserveDiscount && !promoCodeUsedBefore) {
-                binding.congrat.setVisibility(View.VISIBLE);
-                totalCost = totalCost.subtract(shippingFee);
-                shippingFee = BigDecimal.ZERO;
-                incremantCount();
-                String serialNumber = getSerialNumber();
-                addSerialNumber(serialNumber);
-            } else {
-                binding.congrat.setVisibility(View.GONE);
-            }
-            String finalCostText = "حسابك " + totalCost;
-            binding.finalCost.setText(finalCostText);
             Date c = Calendar.getInstance().getTime();
-
             SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
-            String formattedDate = df.format(c);
+            formattedDate = df.format(c);
             SimpleDateFormat df1 = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
-            String formattedTime = df1.format(c);
+            formattedTime = df1.format(c);
+            username = shippingData.get(shippingData.size() - 1).getUsername();
+            mobileNumber = shippingData.get(shippingData.size() - 1).getMobileNumber();
+            phoneNumber = shippingData.get(shippingData.size() - 1).getPhoneNumber();
+            address = shippingData.get(shippingData.size() - 1).getAddress();
+            userCity = shippingData.get(shippingData.size() - 1).getCity();
+
+            if (!orderCost.isEmpty()) {
+                sumValue = new BigDecimal(orderCost.get(orderCost.size() - 1).getSum());
+                discountValue = new BigDecimal(orderCost.get(orderCost.size() - 1).getDiscount());
+                overAllDiscount = new BigDecimal(orderCost.get(orderCost.size() - 1).getOverAllDiscount());
+                shippingFee = new BigDecimal(orderCost.get(orderCost.size() - 1).getShippingFee());
+                totalCost = new BigDecimal(orderCost.get(orderCost.size() - 1).getTotalCost());
+                promoCodeUsedBefore = allSerials.contains(getSerialNumber());
+
+                String finalCostText = "حسابك " + totalCost +" جنيه";
+                binding.finalCost.setText(finalCostText);
+
+
+            binding.orderSent.setVisibility(View.VISIBLE);
+
+
+
+
+
+
             String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
             fullOrder = new FullOrder(formattedDate,
                     formattedTime,
@@ -289,9 +315,12 @@ public class OrderSent extends AppCompatActivity {
                     totalCost.toString(),
                     userId,
                     true);
+            }
+
             getOrderId();
 
         });
+
     }
 
     private void getOrderId() {
@@ -312,12 +341,69 @@ public class OrderSent extends AppCompatActivity {
             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
                if (currentData!=null) {
                    id = currentData.getValue(Integer.class);
-                   fullOrder.setId(id);
-                   uploadOrder(fullOrder);
+                   if (fullOrder != null){
+                       fullOrder.setId(id);
+                       uploadOrder(fullOrder);
+                       if (!mPharmacyCart.isEmpty() ){
+                           ShippingData data = new ShippingData(username,mobileNumber,phoneNumber,address);
+                           for (PharmacyOrder order:mPharmacyCart){
+                               order.setOrderId(String.valueOf(id));
+                               order.setShippingData(data);
+                               order.setPharmacyCost(pharmacyCost);
+                               order.setTime(formattedTime);
+                               order.setDate(formattedDate);
+                           }
+                           uploadPharmacyOrder (mPharmacyCart);
+                       }
+                   } else {
+                       if (!mPharmacyCart.isEmpty() ){
+                           String finalCostText = "حسابك " + pharmacyCost + " جنيه";
+                           binding.finalCost.setText(finalCostText);
+                           ShippingData data = new ShippingData(username,mobileNumber,phoneNumber,address);
+                           for (PharmacyOrder order:mPharmacyCart){
+                               order.setOrderId(String.valueOf(id));
+                               order.setShippingData(data);
+                               order.setPharmacyCost(pharmacyCost);
+                           }
+                           uploadPharmacyOrder (mPharmacyCart);
+                       }
+                   }
+
                }
+                if (promoCodes.contains(promoCode) && !promoCode.equals(myPromoCode) && deserveDiscount && !promoCodeUsedBefore) {
+                    binding.congrat.setVisibility(View.VISIBLE);
+                    if (totalCost.compareTo(BigDecimal.ZERO)>0) {
+                        totalCost = totalCost.subtract(shippingFee);
+                        shippingFee = BigDecimal.ZERO;
+                    }
+                    incremantCount();
+                    String serialNumber = getSerialNumber();
+                    addSerialNumber(serialNumber);
+                } else {
+                    binding.congrat.setVisibility(View.GONE);
+                }
+                if (promoCodeUsedBefore)
+                    FancyToast.makeText(OrderSent.this, "تم استخدام كود الأصدقاء على هذا الجهاز من قبل !", FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
 
             }
         });
+    }
+
+    private void uploadPharmacyOrder(List<PharmacyOrder> mPharmacyCart) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("PharmacyOrders");
+        for (PharmacyOrder order:mPharmacyCart)
+            reference.push().setValue(order).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    deletePharmacyCart();
+                    changeDeserveDiscountStatus();
+                    addPointToCurrentUser();
+                    getAllSerials();
+                    if (subtractedPoints != 0)
+                        subtractPoints(subtractedPoints);
+                }
+            });
+
     }
 
 

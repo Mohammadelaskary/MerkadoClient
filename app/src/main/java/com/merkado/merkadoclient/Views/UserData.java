@@ -139,9 +139,6 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
             neighborhoods.clear();
             governoratesNames.clear();
             neighborhoods.addAll(neighborhoods1);
-
-
-
             for (Neighborhood neighborhood:neighborhoods){
                 if (!governoratesNames.contains(neighborhood.getGovernorate()))
                     governoratesNames.add(neighborhood.getGovernorate());
@@ -366,10 +363,6 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
                 streetName = user.getStreetName();
                 buildingNo = user.getBuildingNo();
                 appartmentNo = user.getAppartmentNo();
-                binding.governorateNameSpinner.setSelection(governoratesAdapter.getPosition(governorate));
-                binding.cityNameSpinner.setSelection(citiesAdapter.getPosition(city));
-                Log.d("neigh",neighborhood);
-                binding.neighborhoodNameSpinner.setSelection(neighborhoodsAdapter.getPosition(neighborhood));
                 Objects.requireNonNull(binding.streetName.getEditText()).setText(streetName);
                 Objects.requireNonNull(binding.buildingNo.getEditText()).setText(buildingNo);
                 Objects.requireNonNull(binding.appartmentNo.getEditText()).setText(appartmentNo);
@@ -397,10 +390,12 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
 
     private void getNeighborhoodsNames(String cityName) {
         neighborhoodsNames.clear();
-        for (Neighborhood neighborhood:neighborhoods){
-            if (neighborhood.getCity().equals(cityName)&&!neighborhoodsNames.contains(neighborhood.getNeighborhood())){
-                neighborhoodsNames.add(neighborhood.getNeighborhood());
+        for (Neighborhood neighborhood1:neighborhoods){
+            if (neighborhood1.getCity().equals(cityName)&&!neighborhoodsNames.contains(neighborhood1.getNeighborhood())){
+                neighborhoodsNames.add(neighborhood1.getNeighborhood());
                 neighborhoodsAdapter.notifyDataSetChanged();
+                binding.neighborhoodNameSpinner.setSelection(neighborhoodsAdapter.getPosition(neighborhood));
+
             }
         }
     }
@@ -412,6 +407,7 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
                 citiesNames.add(neighborhood.getCity());
                 Log.d(TAG, "getCitiesNames: "+neighborhood.getCity());
                 citiesAdapter.notifyDataSetChanged();
+                binding.cityNameSpinner.setSelection(citiesAdapter.getPosition(city));
             }
         }
     }
@@ -451,9 +447,9 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
                         && !buildingNo.isEmpty()) {
                     String address;
                     if (famousMark==null)
-                        address = buildingNo + " " + streetName +" ، "+ city +" ، "+ city +" ، "+governorate+" شقة رقم "+ appartmentNo;
+                        address = buildingNo + " " + streetName +" ، "+ city +" ، "+neighborhood+" ، "+governorate+" شقة رقم "+ appartmentNo;
                     else
-                        address = buildingNo + " " + streetName +" ، "+ city +" ، "+ city +" ، "+governorate+" بالقرب من "+famousMark+" شقة رقم "+ appartmentNo;
+                        address = buildingNo + " " + streetName +" ، "+ city +" ، " +neighborhood+" ، "+governorate+" بالقرب من "+famousMark+" شقة رقم "+ appartmentNo;
                     ShippingData shippingData = new ShippingData(username, mobileNumber, phoneNumber, address);
                     shippingData.setCity(city);
                     if (!famousMark.isEmpty())
@@ -476,10 +472,13 @@ public class UserData extends AppCompatActivity implements View.OnClickListener,
                     MainActivity.dataBase.myDao().addShippingData(shippingData);
                     Intent intent1 = getIntent();
                     int subtractedPoints = intent1.getIntExtra("subtractedPoints", 0);
+                    String pharmacyCost = intent1.getStringExtra("pharmacyCost");
                     Intent intent = new Intent(UserData.this, OrderSent.class);
                     intent.putExtra("subtractedPoints", subtractedPoints);
                     if (!promoCode.isEmpty())
                         intent.putExtra("promoCode", promoCode);
+                    intent.putExtra("pharmacyCost",pharmacyCost);
+                    Log.d(TAG, "onClick: "+pharmacyCost);
                     startActivity(intent);
                     finish();
                 }

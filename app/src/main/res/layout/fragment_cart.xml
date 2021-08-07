@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/full_layout"
+    android:animateLayoutChanges="true"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 <com.facebook.shimmer.ShimmerFrameLayout
@@ -44,9 +46,46 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:animateLayoutChanges="true"
                     android:layout_above="@id/total_cost"
                     android:layout_alignParentTop="true">
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/pharmacy_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/pharmacy"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/_80sdp"
+                            android:layout_margin="@dimen/_5sdp"
+                            android:gravity="center"
+                            android:text="الصيدلية"
+                            android:textSize="@dimen/_20ssp"
+                            android:textColor="@color/white"
+                            app:icon="@drawable/ic__pharmacy"
+                            app:iconGravity="start"
+                            app:iconSize="@dimen/_30sdp"
+                            app:iconPadding="@dimen/_10sdp"
+                            android:background="@drawable/add_photo_button_background"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                        <TextView
+                            android:id="@+id/number_of_pharmacy_items"
+                            android:layout_width="@dimen/_20sdp"
+                            android:layout_height="@dimen/_20sdp"
+                            android:text="1"
+                            android:textColor="@color/white"
+                            android:gravity="center"
+                            android:translationZ="@dimen/_5sdp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            android:layout_marginTop="@dimen/_15sdp"
+                            android:layout_marginEnd="@dimen/_15sdp"
+                            android:background="@drawable/cart_indecator_background"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/cart"
                         android:layout_width="match_parent"
@@ -71,7 +110,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/_5sdp"
                     android:orientation="vertical">
-
+                    <LinearLayout
+                        android:id="@+id/calculations"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -180,16 +223,31 @@
                             android:layout_marginEnd="@dimen/_5sdp"
                             android:text="التوصيـــــــــــــــــــــــل:"
                             android:textSize="@dimen/_15ssp" />
-
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/_5sdp">
+                        <androidx.core.widget.ContentLoadingProgressBar
+                            android:id="@+id/shipping_fee_progress1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            style="?android:progressBarStyleSmall"/>
                         <TextView
                             android:id="@+id/shipping_fee"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="@dimen/_5sdp"
-                            android:text="0"
+                            android:text=""
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
                             android:textColor="@color/colorPrimaryDark"
                             android:textSize="@dimen/_20ssp" />
-
+                    </androidx.constraintlayout.widget.ConstraintLayout>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -197,7 +255,7 @@
                             android:textColor="@color/home"
                             android:textSize="@dimen/_15ssp" />
                     </LinearLayout>
-
+                    </LinearLayout>
 
                 </LinearLayout>
                 <LinearLayout
@@ -282,24 +340,44 @@
                         android:layout_centerInParent="true"
                         android:textColor="@color/colorPrimary"
                         android:textSize="@dimen/_15ssp" />
-
-                    <TextView
-                        android:id="@+id/total"
-                        android:layout_toEndOf="@id/total_sum"
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/total_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/_10sdp"
-                        android:text="0"
-                        android:layout_centerInParent="true"
-                        android:textColor="@color/colorPrimaryDark"
-                        android:textSize="@dimen/_20ssp" />
+                        android:layout_toEndOf="@id/total_sum"
+                        android:layout_marginEnd="@dimen/_5sdp">
+                        <androidx.core.widget.ContentLoadingProgressBar
+                            android:id="@+id/shipping_fee_progress2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            style="?android:progressBarStyleSmall"
+                            />
+                        <TextView
+                            android:id="@+id/total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/_10sdp"
+                            android:text=""
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_centerInParent="true"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:textSize="@dimen/_20ssp" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/pound"
                         android:textColor="@color/home"
-                        android:layout_toEndOf="@id/total"
+                        android:layout_toEndOf="@id/total_layout"
                         android:layout_toStartOf="@id/complete"
                         android:layout_centerInParent="true"
                         android:textSize="@dimen/_15ssp" />
@@ -313,7 +391,8 @@
                         android:layout_centerInParent="true"
                         android:layout_marginEnd="@dimen/_5sdp"
                         android:layout_marginStart="@dimen/_20sdp"
-                        android:layout_alignParentEnd="true"/>
+                        android:layout_alignParentEnd="true"
+                        android:enabled="false"/>
                 </RelativeLayout>
             </LinearLayout>
         </RelativeLayout>

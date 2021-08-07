@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.merkado.merkadoclient.Adapters.FullOrderAdapter;
 import com.merkado.merkadoclient.Model.FullOrder;
+import com.merkado.merkadoclient.Model.Order;
+import com.merkado.merkadoclient.Model.PharmacyOrder;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
 import com.merkado.merkadoclient.databinding.ActivityPreviousOrdersBinding;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,9 +29,11 @@ import java.util.concurrent.ExecutionException;
 
 public class PreviousOrders extends AppCompatActivity {
     ActivityPreviousOrdersBinding binding;
-    List<FullOrder> list;
+    List<FullOrder> list = new ArrayList<>();
     FullOrderAdapter adapter;
     HomeViewModel homeViewModel;
+    List<PharmacyOrder> myPharmacyOrders = new ArrayList<>();
+    List<Order> orders = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +42,6 @@ public class PreviousOrders extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(binding.getRoot());
         Objects.requireNonNull(getSupportActionBar()).setTitle("الطلبـــــات السابقة");
-
-
-        list = new ArrayList<>();
         if (isConnected()) {
             try {
                 initViewModel();
@@ -50,7 +52,7 @@ public class PreviousOrders extends AppCompatActivity {
             getData();
 
 
-            adapter = new FullOrderAdapter(this, list, false);
+            adapter = new FullOrderAdapter(this,orders, false);
             binding.fullOrderRecycler.setAdapter(adapter);
             binding.fullOrderRecycler.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
             binding.fullOrderRecycler.setHasFixedSize(true);
@@ -62,7 +64,43 @@ public class PreviousOrders extends AppCompatActivity {
 
     }
 
-
+    private void addOrdersToList() {
+        List<Integer> ordersIds = new ArrayList<>();
+        for (FullOrder order:list){
+            int id = order.getId();
+            ordersIds.add(id);
+        }
+        if (!myPharmacyOrders.isEmpty()) {
+            for (PharmacyOrder pharmacyOrder : myPharmacyOrders) {
+                int id = Integer.parseInt(pharmacyOrder.getOrderId());
+                if (!ordersIds.contains(id)) {
+                    ordersIds.add(id);
+                }
+            }
+        }
+        for (int id:ordersIds){
+            Order order = new Order(id);
+            for (FullOrder fullOrder:list){
+                int orderId = fullOrder.getId();
+                if (orderId == id){
+                    order.setFullOrder(fullOrder);
+                    break;
+                }
+            }
+            List<PharmacyOrder> pharmacyOrders = new ArrayList<>();
+            if (!myPharmacyOrders.isEmpty()) {
+                for (PharmacyOrder pharmacyOrder : myPharmacyOrders) {
+                    int orderId = Integer.parseInt(pharmacyOrder.getOrderId());
+                    if (orderId == id) {
+                        pharmacyOrders.add(pharmacyOrder);
+                    }
+                }
+            }
+            order.setPharmacyOrders(pharmacyOrders);
+            orders.add(order);
+        }
+        Log.d("recSize",orders.size()+"");
+    }
     void getData() {
         homeViewModel.getAllPreOrdersLiveData().observe(PreviousOrders.this, new Observer<List<FullOrder>>() {
             @Override
@@ -72,10 +110,10 @@ public class PreviousOrders extends AppCompatActivity {
                 for (FullOrder order : fullOrders) {
                     if (order.getUserId().equals(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid())) {
                         list.add(order);
-                        adapter.notifyDataSetChanged();
                     }
                 }
-
+                addOrdersToList();
+                adapter.notifyDataSetChanged();
                 if (list.isEmpty()) {
                     binding.noPreOrdersText.setVisibility(View.VISIBLE);
                     binding.noPreOrdersText.setText("لا يوجد طلبات سابقة");
@@ -124,7 +162,5 @@ public class PreviousOrders extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         finish();
-
-
     }
 }

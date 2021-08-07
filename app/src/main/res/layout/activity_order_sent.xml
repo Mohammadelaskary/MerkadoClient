@@ -13,15 +13,7 @@
         android:textSize="@dimen/_20ssp"
         android:layout_margin="@dimen/_7sdp"
         android:textColor="@color/home"/>
-    <TextView
-        android:id="@+id/apologize"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/_20sdp"
-        android:gravity="center"
-        android:layout_margin="@dimen/_7sdp"
-        android:text="@string/apologize"
-        android:textColor="@color/colorPrimaryDark"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,13 +35,15 @@
             android:text="@string/congratulation"
             android:textSize="@dimen/_20sdp"
             android:gravity="center"
+            android:visibility="gone"
             android:textColor="@color/offers"/>
         <TextView
             android:id="@+id/final_cost"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_7sdp"
-            android:text="@string/final_cost"
+            android:text=""
+            android:visibility="visible"
             android:textSize="@dimen/_20sdp"
             android:gravity="center"
             android:textColor="@color/colorPrimaryDark"/>

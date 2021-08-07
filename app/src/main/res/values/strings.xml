@@ -30,6 +30,15 @@
     <string name="logout" translatable="false">تسجيل خروج</string>
     <string name="search_for_product" translatable="false">ابحث عن منتج...</string>
     <string name="search" translatable="false">بحث</string>
+    <string-array name="item_types">
+        <item>شريط</item>
+        <item>علبة</item>
+    </string-array>
 
-
+    <string-array name="items_to_delete">
+        <item>المنتجات فقط</item>
+        <item>الصيدلية فقط</item>
+        <item>الطلب بالكامل</item>
+        <item>إلغاء الأمر</item>
+    </string-array>
 </resources>
