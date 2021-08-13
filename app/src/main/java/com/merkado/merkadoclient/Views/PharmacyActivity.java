@@ -32,6 +32,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -54,6 +55,7 @@ import com.google.firebase.storage.UploadTask;
 import com.merkado.merkadoclient.Adapters.PharmacyAdapter;
 import com.merkado.merkadoclient.BuildConfig;
 import com.merkado.merkadoclient.ChooseImageDialog;
+import com.merkado.merkadoclient.CompressImage;
 import com.merkado.merkadoclient.Interfaces.chooseImageInterface;
 import com.merkado.merkadoclient.Interfaces.setOnPharmacyItemClicked;
 import com.merkado.merkadoclient.Model.PharmacyOrder;
@@ -63,12 +65,15 @@ import com.merkado.merkadoclient.databinding.ActivityPharmacyBinding;
 import com.shashank.sony.fancytoastlib.FancyToast;
 import com.zxy.tiny.Tiny;
 import com.zxy.tiny.callback.BitmapCallback;
+import com.zxy.tiny.callback.FileWithBitmapCallback;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -92,6 +97,7 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
     ActivityResultLauncher<Intent> openGalleryResultLauncher;
     boolean isRochetta;
     Uri bottomSheetImageUri,cameraImageUri;
+    String image64;
     private File output=null;
     StorageReference storage;
     FirebaseDatabase database;
@@ -101,6 +107,9 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
     HomeViewModel homeViewModel;
     List<PharmacyOrder> cartOrders = new ArrayList<>();
     PharmacyAdapter adapter;
+    ProgressDialog progressDialog;
+
+    CompressImage compressImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +129,8 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
         database = FirebaseDatabase.getInstance();
         reference = database.getReference("Pharmacy Cart").child(userId);
 
+        compressImage = new CompressImage(this);
+
         attachButtonsToListener();
         addTextWatcher();
         try {
@@ -130,8 +141,9 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
         initPharmacyAdapter();
         getMyPharmacyCart();
         chooseImageDialog = new ChooseImageDialog(this, this);
-
-        Tiny.getInstance().init(getApplication());
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("جار التحميل ....");
+        progressDialog.setCancelable(false);
 
         openCameraResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -146,6 +158,7 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
                             } else {
                                 binding.addTherapyImage.setVisibility(View.GONE);
                                 binding.therapyImageContainer.setVisibility(View.VISIBLE);
+                                decodeBase64AndSetImage(image64,binding.therapyImage);
                                 setPic(binding.therapyImage);
                             }
                             bottomSheetImageUri = galleryAddPic();
@@ -179,7 +192,6 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
                                     binding.therapyImage.setImageURI(choosenImageUri);
                                 }
                                 bottomSheetImageUri = choosenImageUri;
-
                                 chooseImageDialog.dismiss();
                             } else {
                                 FancyToast.makeText(PharmacyActivity.this, "لم يتم اختيار أي صورة!", Toast.LENGTH_SHORT).show();
@@ -188,6 +200,19 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
                     }
                 });
 
+    }
+    private String getBase64String(Uri imageUri) throws FileNotFoundException {
+        final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+        final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+        return encodeImage(selectedImage);
+    }
+
+    private String encodeImage(Bitmap bm)
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG,100,baos);
+        byte[] b = baos.toByteArray();
+        return Base64.encodeToString(b, Base64.DEFAULT);
     }
 
     private void initPharmacyAdapter() {
@@ -203,14 +228,27 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
                 cartOrders.clear();
                 binding.pharmacyOrderedLoading.hide();
                 cartOrders.addAll(pharmacyOrders);
-                adapter.notifyDataSetChanged();
+
                 if (cartOrders.isEmpty()){
                     binding.goToCart.setVisibility(View.GONE);
                 } else {
                     binding.goToCart.setVisibility(View.VISIBLE);
                 }
+                adapter.notifyDataSetChanged();
             }
         });
+    }
+
+    private void decodeBase64AndSetImage(String completeImageData, ImageView imageView) {
+
+        // Incase you're storing into aws or other places where we have extension stored in the starting.
+        String imageDataBytes = completeImageData.substring(completeImageData.indexOf(",")+1);
+
+        InputStream stream = new ByteArrayInputStream(Base64.decode(imageDataBytes.getBytes(), Base64.DEFAULT));
+
+        Bitmap bitmap = BitmapFactory.decodeStream(stream);
+
+        imageView.setImageBitmap(bitmap);
     }
 
     private Uri galleryAddPic() {
@@ -344,7 +382,7 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "نعم",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
-                                    uploadData();
+                                    uploadData("","");
                                     dialog.dismiss();
                                 }
                             });
@@ -367,18 +405,94 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
         String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
         return Uri.parse(path);
     }
+    public String resizeDownBase64Image(String base64image){
+        byte [] encodeByte=Base64.decode(base64image.getBytes(),Base64.DEFAULT);
+        BitmapFactory.Options options=new BitmapFactory.Options();
+        options.inPurgeable = true;
+        Bitmap image = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length,options);
 
-    ProgressDialog progressDialog;
+
+        if(image.getHeight() <= 400 && image.getWidth() <= 400){
+            return base64image;
+        }
+
+        image = Bitmap.createScaledBitmap(image, (int)(image.getWidth()*0.1), (int)(image.getHeight()*0.1), false);
+
+        ByteArrayOutputStream baos=new  ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG,100, baos);
+
+        byte [] b=baos.toByteArray();
+        System.gc();
+        return Base64.encodeToString(b, Base64.NO_WRAP);
+
+    }
+    public String resizeUpBase64Image(String base64image){
+        byte [] encodeByte=Base64.decode(base64image.getBytes(),Base64.DEFAULT);
+        BitmapFactory.Options options=new BitmapFactory.Options();
+        options.inPurgeable = true;
+        Bitmap image = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length,options);
+
+
+        if(image.getHeight() >= 1000 && image.getWidth() >= 1000){
+            return base64image;
+        }
+
+        image = Bitmap.createScaledBitmap(image,image.getWidth()*10, image.getHeight()*10, false);
+
+        ByteArrayOutputStream baos=new  ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG,100, baos);
+
+        byte [] b=baos.toByteArray();
+        System.gc();
+        return Base64.encodeToString(b, Base64.NO_WRAP);
+
+    }
+
+    private void setPic(ImageView imageView) {
+        // Get the dimensions of the View
+        int targetW = imageView.getLayoutParams().width;
+        int targetH = imageView.getLayoutParams().height;
+
+        // Get the dimensions of the bitmap
+        BitmapFactory.Options options=new BitmapFactory.Options();
+        options.inPurgeable = true;
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeFile(currentPhotoPath, options);
+
+        int photoW = options.outWidth;
+        int photoH = options.outHeight;
+
+        // Determine how much to scale down the image
+        int scaleFactor = Math.max(1,
+                Math.min(photoW/targetW,
+                        photoH/targetH));
+
+        // Decode the image file into a Bitmap sized to fill the View
+        options.inJustDecodeBounds = false;
+        options.inSampleSize = scaleFactor;
+        options.inPurgeable = true;
+
+        Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath, options);
+        imageView.setImageBitmap(bitmap);
+    }
+
     private void uploadImageAndData(Uri bottomSheetImageUri) {
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("جار التحميل ....");
         progressDialog.show();
-        progressDialog.setCancelable(false);
         String imageFileName;
         if (bottomSheetImageUri != null){
             imageFileName = FirebaseAuth.getInstance().getUid() + System.currentTimeMillis()+"." + getFileExtension(bottomSheetImageUri);
             final StorageReference fileReference = storage.child(imageFileName);
-            uploadTask = fileReference.putFile(bottomSheetImageUri);
+            Bitmap bmp = null;
+            try {
+                bmp = MediaStore.Images.Media.getBitmap(getContentResolver(),bottomSheetImageUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+            byte[] data = baos.toByteArray();
+            uploadTask = fileReference.putBytes(data);
             uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
@@ -392,14 +506,13 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()) {
                         Uri downloadUri = task.getResult();
-                        uploadData(downloadUri,imageFileName);
+                        uploadData(downloadUri.toString(),imageFileName);
                     } else {
 //                        FancyToast.makeText(getApplicationContext(), "فشل في تحميل الصورة، برجاء المحاولة في وقت آخر"
 //                                , FancyToast.LENGTH_SHORT, FancyToast.ERROR, false).show();
 
                         Log.e("upload error",task.getException().getMessage());
                     }
-                    progressDialog.dismiss();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -407,44 +520,43 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
                     FancyToast.makeText(getApplicationContext(), "فشل في تحميل الصورة، برجاء المحاولة في وقت آخر"
                             , FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
 
-                    progressDialog.dismiss();
                 }
             });
         }
     }
 
     PharmacyOrder order;
-    private void uploadData() {
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("جار التحميل ....");
-        progressDialog.show();
-        progressDialog.setCancelable(false);
-        String therapyName   = binding.therapyName.getEditText().getText().toString().trim();
-        String numberOfItems = binding.numberOfItems.getEditText().getText().toString().trim();
-        String describtion   = binding.therapyDescribtion.getEditText().getText().toString().trim();
-        String itemType      = binding.typeOfItem.getSelectedItem().toString();
-        boolean acceptAlternative = binding.acceptAlternative.isChecked();
-        String pharmacyCartId = reference.push().getKey();
+//    private void uploadData() {
+//        progressDialog = new ProgressDialog(this);
+//        progressDialog.setMessage("جار التحميل ....");
+//        progressDialog.show();
+//        progressDialog.setCancelable(false);
+//        String therapyName   = binding.therapyName.getEditText().getText().toString().trim();
+//        String numberOfItems = binding.numberOfItems.getEditText().getText().toString().trim();
+//        String describtion   = binding.therapyDescribtion.getEditText().getText().toString().trim();
+//        String itemType      = binding.typeOfItem.getSelectedItem().toString();
+//        boolean acceptAlternative = binding.acceptAlternative.isChecked();
+//        String pharmacyCartId = reference.push().getKey();
+//
+//        order = new PharmacyOrder(userId,"",describtion,therapyName,numberOfItems,itemType,String.valueOf(acceptAlternative),"",pharmacyCartId);
+//        order.setImage64(image64);
+//
+//        reference.push().setValue(order).addOnCompleteListener(this);
+//
+//    }
 
-        order = new PharmacyOrder(userId,"",describtion,therapyName,numberOfItems,itemType,String.valueOf(acceptAlternative),"",pharmacyCartId);
-
-
-        reference.push().setValue(order).addOnCompleteListener(this);
-
-    }
-
-    private void uploadData(Uri downloadUri,String imageFileName) {
+    private void uploadData(String imageUrl,String fileName) {
         if (isRochetta){
             String describtion = binding.rochettaDescribtion.getEditText().getText().toString().trim();
             String pharmacyCartId = reference.push().getKey();
             order = new PharmacyOrder(userId,
-                    downloadUri.toString(),
+                    imageUrl,
                     describtion,
                     "",
                     "",
                     "",
                     "",
-                    imageFileName,
+                    fileName,
                     pharmacyCartId);
 
         } else {
@@ -455,13 +567,13 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
             boolean acceptAlternative = binding.acceptAlternative.isChecked();
             String pharmacyCartId = reference.push().getKey();
             order  = new PharmacyOrder(userId,
-                    downloadUri.toString(),
+                    imageUrl,
                     describtion,
                     therapyName,
                     numberOfItems,
                     itemType,
                     String.valueOf(acceptAlternative),
-                    imageFileName,
+                    fileName,
                     pharmacyCartId);
         }
         reference.push().setValue(order).addOnCompleteListener(this);
@@ -528,33 +640,7 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-    private void setPic(ImageView imageView) {
-        // Get the dimensions of the View
-        int targetW = imageView.getLayoutParams().width;
-        int targetH = imageView.getLayoutParams().height;
 
-        // Get the dimensions of the bitmap
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bmOptions.inJustDecodeBounds = true;
-
-        BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
-
-        int photoW = bmOptions.outWidth;
-        int photoH = bmOptions.outHeight;
-
-        // Determine how much to scale down the image
-        int scaleFactor = Math.max(1,
-                Math.min(photoW/targetW,
-                        photoH/targetH));
-
-        // Decode the image file into a Bitmap sized to fill the View
-        bmOptions.inJustDecodeBounds = false;
-        bmOptions.inSampleSize = scaleFactor;
-        bmOptions.inPurgeable = true;
-
-        Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
-        imageView.setImageBitmap(bitmap);
-    }
 
     String currentPhotoPath;
     private File createImageFile() throws IOException {
@@ -604,12 +690,15 @@ public class PharmacyActivity extends AppCompatActivity implements View.OnClickL
             binding.rochettaImage.setImageURI(null);
             binding.therapyImageContainer.setVisibility(View.GONE);
             binding.therapyImage.setImageURI(null);
+            binding.therapyName.getEditText().setText("");
             binding.numberOfItems.getEditText().setText("");
             binding.rochettaDescribtion.getEditText().setText("");
             binding.therapyDescribtion.getEditText().setText("");
             binding.addRochettaImage.setVisibility(View.VISIBLE);
             binding.addTherapyImage.setVisibility(View.VISIBLE);
             bottomSheetImageUri = null;
+            addRochettaSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
+            addTherapySheet.setState(BottomSheetBehavior.STATE_HIDDEN);
         } else {
             FancyToast.makeText(this,"فشل في إضافة المطلوب!",FancyToast.LENGTH_SHORT,FancyToast.CONFUSING,false).show();
         }

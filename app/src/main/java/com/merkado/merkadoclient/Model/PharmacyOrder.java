@@ -21,6 +21,16 @@ public class PharmacyOrder {
     private boolean shiped;
     private boolean done;
 
+    private String image64;
+
+    public String getImage64() {
+        return image64;
+    }
+
+    public void setImage64(String image64) {
+        this.image64 = image64;
+    }
+
     public boolean isSeen() {
         return seen;
     }

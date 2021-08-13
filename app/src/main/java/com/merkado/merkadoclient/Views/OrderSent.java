@@ -29,6 +29,7 @@ import com.merkado.merkadoclient.Database.ProductOrder;
 import com.merkado.merkadoclient.Database.ShippingData;
 import com.merkado.merkadoclient.Model.FullOrder;
 import com.merkado.merkadoclient.Model.Neighborhood;
+import com.merkado.merkadoclient.Model.Order;
 import com.merkado.merkadoclient.Model.PharmacyOrder;
 import com.merkado.merkadoclient.Model.User;
 import com.merkado.merkadoclient.ViewModel.HomeViewModel;
@@ -90,7 +91,6 @@ public class OrderSent extends AppCompatActivity {
         orderProducts = MainActivity.dataBase.myDao().getAllOrders();
         shippingData = MainActivity.dataBase.myDao().getAllShippingData();
         orderCost = MainActivity.dataBase.myDao().getAllOrderCost();
-
         deleteMyCart();
 
 
@@ -101,6 +101,7 @@ public class OrderSent extends AppCompatActivity {
         homeViewModel.getMyPharmacyCart().observe(this,pharmacyOrders -> {
             mPharmacyCart.clear();
             mPharmacyCart.addAll(pharmacyOrders);
+            Log.d("pharmacyCartSize",mPharmacyCart.size()+"");
         });
     }
 
@@ -143,10 +144,14 @@ public class OrderSent extends AppCompatActivity {
 
 
 
-    private void uploadOrder(FullOrder order) {
-
+    private void uploadOrder(Order order) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Orders");
-        reference.push().setValue(order);
+        reference.push().setValue(order).addOnCompleteListener(task -> {
+            if (task.isSuccessful())
+                deletePharmacyCart();
+            else
+                Log.d("upload order", task.getException().getMessage()+"error");
+        });
         decrementProductsAmount();
         changeDeserveDiscountStatus();
         addPointToCurrentUser();
@@ -292,11 +297,6 @@ public class OrderSent extends AppCompatActivity {
 
             binding.orderSent.setVisibility(View.VISIBLE);
 
-
-
-
-
-
             String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
             fullOrder = new FullOrder(formattedDate,
                     formattedTime,
@@ -339,21 +339,22 @@ public class OrderSent extends AppCompatActivity {
 
             @Override
             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-               if (currentData!=null) {
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                if (currentData!=null) {
                    id = currentData.getValue(Integer.class);
                    if (fullOrder != null){
                        fullOrder.setId(id);
-                       uploadOrder(fullOrder);
                        if (!mPharmacyCart.isEmpty() ){
                            ShippingData data = new ShippingData(username,mobileNumber,phoneNumber,address);
+                           pharmacyCost = shippingFee.toString();
                            for (PharmacyOrder order:mPharmacyCart){
                                order.setOrderId(String.valueOf(id));
                                order.setShippingData(data);
                                order.setPharmacyCost(pharmacyCost);
                                order.setTime(formattedTime);
                                order.setDate(formattedDate);
+                               order.setImage64("");
                            }
-                           uploadPharmacyOrder (mPharmacyCart);
                        }
                    } else {
                        if (!mPharmacyCart.isEmpty() ){
@@ -364,10 +365,14 @@ public class OrderSent extends AppCompatActivity {
                                order.setOrderId(String.valueOf(id));
                                order.setShippingData(data);
                                order.setPharmacyCost(pharmacyCost);
+                               order.setImage64("");
                            }
-                           uploadPharmacyOrder (mPharmacyCart);
                        }
                    }
+
+                    Order order = new Order(id,userId,fullOrder,mPharmacyCart);
+                    order.setDate(formattedDate);
+                    uploadOrder(order);
 
                }
                 if (promoCodes.contains(promoCode) && !promoCode.equals(myPromoCode) && deserveDiscount && !promoCodeUsedBefore) {
@@ -395,7 +400,7 @@ public class OrderSent extends AppCompatActivity {
             reference.push().setValue(order).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
-                    deletePharmacyCart();
+
                     changeDeserveDiscountStatus();
                     addPointToCurrentUser();
                     getAllSerials();

@@ -1,9 +1,12 @@
 package com.merkado.merkadoclient.Adapters;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,16 +67,17 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final FullOrderViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final FullOrderViewHolder holder, int position) {
+        int currentPosition = holder.getAdapterPosition();
         final String customerName,time,date,address,mobileNumber,phoneNumber;
         final BigDecimal sum,discount,overAllDiscount,netCost,shipping;
         final boolean isDone,isSeen,isShiped;
-        FullOrder fullOrder = orders.get(position).getFullOrder();
-        List<PharmacyOrder> pharmacyOrders = orders.get(position).getPharmacyOrders();
+        FullOrder fullOrder = orders.get(currentPosition).getFullOrder();
+        List<PharmacyOrder> pharmacyOrders = orders.get(currentPosition).getPharmacyOrders();
         final int id;
-        id = orders.get(position).getId();
+        id = orders.get(currentPosition).getId();
         int numberOfPharmacyItems = 0;
-        if (!pharmacyOrders.isEmpty()) {
+        if (pharmacyOrders!=null) {
             numberOfPharmacyItems = pharmacyOrders.size();
             holder.pharmacyContainer.setVisibility(View.VISIBLE);
         } else {
@@ -129,7 +133,8 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
         holder.phoneNumber.setText(phoneNumber);
         holder.mobileNumber.setText(mobileNumber);
         progressDialog = new ProgressDialog(context);
-
+        progressDialog.setMessage("برجاء الانتظار....");
+        progressDialog.setCancelable(false);
         if (isSeen)
             holder.stateProgressBar.setCurrentStateNumber(StateNumber.TWO);
 
@@ -147,8 +152,7 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
             @Override
             public void onClick(View v) {
                 if (!isShiped) {
-                    cancelOrder(id, position,holder.pharmacyContainer,holder.orders,holder.calculations,holder.paymentTitle, holder.totalCost);
-                    pushNotication(customerName);
+                    cancelOrder(id, currentPosition,holder.pharmacyContainer,holder.orders,holder.calculations,holder.paymentTitle, holder.totalCost,customerName);
                 }else
                     FancyToast.makeText(context,"لا يمكنك إلغاء الطلب في مرحلة التوصيل!!",FancyToast.LENGTH_LONG,FancyToast.ERROR,false).show();
             }
@@ -178,11 +182,11 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
     }
 
     private void cancelOrder(int id,int position,View pharmacy,View ordersRecycler,View calculations
-            ,TextView totalTv, TextView totalCost) {
+            ,TextView totalTv, TextView totalCost,String customerName) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Orders");
         Query query = reference.orderByChild("id").equalTo(id);
         Map<String,Object> idMap = new HashMap<>();
-        idMap.put("userId"," ");
+        idMap.put("userId","");
         Order order = orders.get(position);
         FullOrder fullOrder = order.getFullOrder();
         List<PharmacyOrder> pharmacyOrders = order.getPharmacyOrders();
@@ -195,31 +199,36 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
                     dialog.dismiss();
                     progressDialog.show();
                     if (fullOrder!=null){
-                        String shippingFee = fullOrder.getShipping();
-                        query.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    snapshot.getRef().updateChildren(idMap);
-                                    progressDialog.hide();
-                                }
-                            }
-
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                progressDialog.hide();
-                                FancyToast.makeText(context,"حدث خطأ",FancyToast.LENGTH_SHORT,FancyToast.ERROR,false);
-                            }
-                        });
-                        if (!pharmacyOrders.isEmpty()){
+                        if (pharmacyOrders!=null) {
+                            String shippingFee = fullOrder.getShipping();
                             ordersRecycler.setVisibility(View.GONE);
                             calculations.setVisibility(View.GONE);
                             totalTv.setText("التوصيــــــل:");
+                            Log.d("shipingPharmacy123",shippingFee);
                             totalCost.setText(shippingFee);
+                            Map<String, Object> fullOrderMap = new HashMap<>();
+                            fullOrderMap.put("fullOrder", null);
+                            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                        snapshot.getRef().updateChildren(fullOrderMap);
+                                        progressDialog.hide();
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    progressDialog.hide();
+                                    FancyToast.makeText(context, "حدث خطأ", FancyToast.LENGTH_SHORT, FancyToast.ERROR, false).show();
+                                }
+                            });
+
                         } else {
-                            removeAt(position);
+                            removeOrder(id,position,customerName);
+
                         }
+
                     } else {
                         progressDialog.dismiss();
                         FancyToast.makeText(context,"لا يوجد منتجات بالفعل..",FancyToast.LENGTH_SHORT,FancyToast.CONFUSING,false).show();
@@ -230,12 +239,27 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
                 case 1:{
                     dialog.dismiss();
                     progressDialog.show();
-                    if (!pharmacyOrders.isEmpty()){
-                        removePharmacy(String.valueOf(id));
-                        if (fullOrder!=null){
+                    if (pharmacyOrders!=null){
+                        if(fullOrder!= null) {
+                            Map<String, Object> pharmacyMap = new HashMap<>();
+                            pharmacyMap.put("pharmacyOrders", null);
+                            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                                        dataSnapshot.getRef().updateChildren(pharmacyMap);
+                                        progressDialog.hide();
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
                             pharmacy.setVisibility(View.GONE);
                         } else {
-                            removeAt(position);
+                            removeOrder(id,position,customerName);
                         }
                     } else {
                         progressDialog.dismiss();
@@ -246,29 +270,7 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
                 case 2:{
                     dialog.dismiss();
                     progressDialog.show();
-                    if (fullOrder!=null) {
-                        query.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    snapshot.getRef().updateChildren(idMap);
-
-                                    progressDialog.hide();
-                                }
-                            }
-
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                progressDialog.hide();
-                                FancyToast.makeText(context, "حدث خطأ", FancyToast.LENGTH_SHORT, FancyToast.ERROR, false);
-                            }
-                        });
-                    }
-                    if (!orders.isEmpty()){
-                        removePharmacy(String.valueOf(id));
-                    }
-                    removeAt(position);
+                    removeOrder(id,position,customerName);
                 } break;
                 case 3:{
                     dialog.dismiss();
@@ -279,31 +281,36 @@ public class FullOrderAdapter extends RecyclerView.Adapter<FullOrderAdapter.Full
         dialog.show();
     }
 
+
+
     @Override
     public int getItemCount() {
         return orders.size();
     }
 
 
-    private void removePharmacy(String id){
-        DatabaseReference reference2 = FirebaseDatabase.getInstance().getReference("PharmacyOrders");
-        Query query2 = reference2.orderByChild("orderId").equalTo(id);
-        Map<String,Object> idMap2 = new HashMap<>();
-        idMap2.put("userId"," ");
-        query2.addListenerForSingleValueEvent(new ValueEventListener() {
+    private void removeOrder(int id,int position,String customerName){
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Orders");
+        Query query = reference.orderByChild("id").equalTo(id);
+        Map<String,Object> idMap = new HashMap<>();
+        idMap.put("userId","");
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    snapshot.getRef().updateChildren(idMap2);
-                    progressDialog.hide();
+                    snapshot.getRef().updateChildren(idMap);
                 }
+                progressDialog.hide();
+                pushNotication(customerName);
+                removeAt(position);
             }
 
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 progressDialog.hide();
-                FancyToast.makeText(context,"حدث خطأ",FancyToast.LENGTH_SHORT,FancyToast.ERROR,false);
+                FancyToast.makeText(context,"حدث خطأ",FancyToast.LENGTH_SHORT,FancyToast.ERROR,false).show();
+                Log.d("error",databaseError.getMessage());
             }
         });
     }

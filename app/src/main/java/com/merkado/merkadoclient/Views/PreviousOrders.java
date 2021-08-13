@@ -29,11 +29,9 @@ import java.util.concurrent.ExecutionException;
 
 public class PreviousOrders extends AppCompatActivity {
     ActivityPreviousOrdersBinding binding;
-    List<FullOrder> list = new ArrayList<>();
     FullOrderAdapter adapter;
     HomeViewModel homeViewModel;
-    List<PharmacyOrder> myPharmacyOrders = new ArrayList<>();
-    List<Order> orders = new ArrayList<>();
+    List<Order> ordersList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +46,10 @@ public class PreviousOrders extends AppCompatActivity {
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
-            isFinishedLoading();
             getData();
 
 
-            adapter = new FullOrderAdapter(this,orders, false);
+            adapter = new FullOrderAdapter(this,ordersList, false);
             binding.fullOrderRecycler.setAdapter(adapter);
             binding.fullOrderRecycler.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
             binding.fullOrderRecycler.setHasFixedSize(true);
@@ -64,57 +61,20 @@ public class PreviousOrders extends AppCompatActivity {
 
     }
 
-    private void addOrdersToList() {
-        List<Integer> ordersIds = new ArrayList<>();
-        for (FullOrder order:list){
-            int id = order.getId();
-            ordersIds.add(id);
-        }
-        if (!myPharmacyOrders.isEmpty()) {
-            for (PharmacyOrder pharmacyOrder : myPharmacyOrders) {
-                int id = Integer.parseInt(pharmacyOrder.getOrderId());
-                if (!ordersIds.contains(id)) {
-                    ordersIds.add(id);
-                }
-            }
-        }
-        for (int id:ordersIds){
-            Order order = new Order(id);
-            for (FullOrder fullOrder:list){
-                int orderId = fullOrder.getId();
-                if (orderId == id){
-                    order.setFullOrder(fullOrder);
-                    break;
-                }
-            }
-            List<PharmacyOrder> pharmacyOrders = new ArrayList<>();
-            if (!myPharmacyOrders.isEmpty()) {
-                for (PharmacyOrder pharmacyOrder : myPharmacyOrders) {
-                    int orderId = Integer.parseInt(pharmacyOrder.getOrderId());
-                    if (orderId == id) {
-                        pharmacyOrders.add(pharmacyOrder);
-                    }
-                }
-            }
-            order.setPharmacyOrders(pharmacyOrders);
-            orders.add(order);
-        }
-        Log.d("recSize",orders.size()+"");
-    }
+
     void getData() {
-        homeViewModel.getAllPreOrdersLiveData().observe(PreviousOrders.this, new Observer<List<FullOrder>>() {
+        homeViewModel.getAllPreOrdersLiveData().observe(PreviousOrders.this, new Observer<List<Order>>() {
             @Override
-            public void onChanged(List<FullOrder> fullOrders) {
+            public void onChanged(List<Order> orders) {
                 binding.progressBar.hide();
-                list.clear();
-                for (FullOrder order : fullOrders) {
+                ordersList.clear();
+                for (Order order : orders) {
                     if (order.getUserId().equals(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid())) {
-                        list.add(order);
+                        ordersList.add(order);
                     }
                 }
-                addOrdersToList();
                 adapter.notifyDataSetChanged();
-                if (list.isEmpty()) {
+                if (ordersList.isEmpty()) {
                     binding.noPreOrdersText.setVisibility(View.VISIBLE);
                     binding.noPreOrdersText.setText("لا يوجد طلبات سابقة");
                 } else {
@@ -125,21 +85,6 @@ public class PreviousOrders extends AppCompatActivity {
         });
     }
 
-    private void isFinishedLoading() {
-        homeViewModel.getPreOrdersFinishLoading().observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean) {
-                    if (list.isEmpty()) {
-                        binding.progressBar.hide();
-                        binding.noPreOrdersText.setVisibility(View.VISIBLE);
-                        binding.noPreOrdersText.setText("لا يوجد طلبات سابقة...");
-                        binding.noPreOrders.setVisibility(View.VISIBLE);
-                    }
-                }
-            }
-        });
-    }
 
     public boolean isConnected() {
         boolean connected = false;

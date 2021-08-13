@@ -379,6 +379,7 @@
                 android:layout_centerVertical="true"
                 />
             <TextView
+                android:id="@+id/net_cost"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/_20ssp"
@@ -386,7 +387,6 @@
                 android:layout_toEndOf="@id/payment_title"
                 android:layout_marginEnd="@dimen/_10sdp"
                 android:textColor="@color/colorPrimaryDark"
-                android:id="@+id/net_cost"
                 android:layout_centerVertical="true"
                 />
             <TextView

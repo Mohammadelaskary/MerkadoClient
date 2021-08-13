@@ -13,6 +13,7 @@ import com.merkado.merkadoclient.Model.Contact;
 import com.merkado.merkadoclient.Model.DepartmentNames;
 import com.merkado.merkadoclient.Model.FullOrder;
 import com.merkado.merkadoclient.Model.Neighborhood;
+import com.merkado.merkadoclient.Model.Order;
 import com.merkado.merkadoclient.Model.OverTotalMoneyDiscount;
 import com.merkado.merkadoclient.Model.PharmacyOrder;
 import com.merkado.merkadoclient.Model.PointsDiscount;
@@ -330,27 +331,25 @@ public class Repository {
         return neighborhoodLiveData;
     }
 
-    public MutableLiveData<List<FullOrder>> getAllCurrentOrders() {
-        final MutableLiveData<List<FullOrder>> fullOrderLiveData = new MutableLiveData<>();
-        final List<FullOrder> fullOrderList = new ArrayList<>();
+    public MutableLiveData<List<Order>> getAllCurrentOrders() {
+        final MutableLiveData<List<Order>> orderLiveData = new MutableLiveData<>();
+        final List<Order> ordersList = new ArrayList<>();
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Orders");
-            reference.addValueEventListener(new ValueEventListener() {
+            Query query = reference.orderByChild("userId").equalTo(userId);
+            query.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-
                     if (snapshot.exists()) {
-                        fullOrderList.clear();
+                        ordersList.clear();
                         for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                            FullOrder fullOrder = dataSnapshot.getValue(FullOrder.class);
-                            fullOrderList.add(fullOrder);
-                            Log.d(TAG, "onDataChange: orders" + fullOrder.getMobilePhone());
+                            Order order = dataSnapshot.getValue(Order.class);
+                            ordersList.add(order);
                         }
-                        fullOrderLiveData.setValue(fullOrderList);
-
+                        orderLiveData.setValue(ordersList);
                     }
                     currentOrdersFinishLoading.setValue(true);
-
                 }
 
                 @Override
@@ -359,25 +358,24 @@ public class Repository {
                 }
             });
         }
-        return fullOrderLiveData;
+        return orderLiveData;
     }
 
-    public MutableLiveData<List<FullOrder>> getAllPreOrders() {
-        final MutableLiveData<List<FullOrder>> fullOrderLiveData = new MutableLiveData<>();
-        final List<FullOrder> fullOrderList = new ArrayList<>();
+    public MutableLiveData<List<Order>> getAllPreOrders() {
+        final MutableLiveData<List<Order>> orderLiveData = new MutableLiveData<>();
+        final List<Order> orderList = new ArrayList<>();
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Done orders");
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
-                        Log.d(TAG, "onDataChange: done");
-                        fullOrderList.clear();
+                        orderList.clear();
                         for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                            FullOrder fullOrder = dataSnapshot.getValue(FullOrder.class);
-                            fullOrderList.add(fullOrder);
+                            Order order = dataSnapshot.getValue(Order.class);
+                            orderList.add(order);
                         }
-                        fullOrderLiveData.setValue(fullOrderList);
+                        orderLiveData.setValue(orderList);
                     }
                     preOrdersFinishLoading.setValue(true);
                 }
@@ -388,7 +386,7 @@ public class Repository {
                 }
             });
         }
-        return fullOrderLiveData;
+        return orderLiveData;
     }
 
     public static class AdsAsynk extends AsyncTask<Void, Void, MutableLiveData<List<AdImages>>> {

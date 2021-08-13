@@ -70,6 +70,7 @@
             android:theme="@style/secondaryTheme" />
         <activity
             android:name=".Views.PreviousOrders"
+            android:theme="@style/secondaryTheme"
             android:screenOrientation="portrait" />
         <activity
             android:name=".Views.OrdersActivity"

@@ -31,9 +31,7 @@ import static android.content.ContentValues.TAG;
 
 public class OrdersActivity extends AppCompatActivity {
     ActivityOrdersBinding binding;
-    List<FullOrder> list = new ArrayList<>();
-    List<PharmacyOrder> myPharmacyOrders = new ArrayList<>();
-    List<Order> orders = new ArrayList<>();
+    List<Order> ordersList = new ArrayList<>();
     FullOrderAdapter adapter;
     HomeViewModel homeViewModel;
 
@@ -53,9 +51,8 @@ public class OrdersActivity extends AppCompatActivity {
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
-            isFinishedLoading();
             getCurrentOrders();
-            adapter = new FullOrderAdapter(this, orders, true);
+            adapter = new FullOrderAdapter(this, ordersList, true);
             binding.fullOrderRecycler.setAdapter(adapter);
             binding.fullOrderRecycler.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, true));
             binding.fullOrderRecycler.setHasFixedSize(true);
@@ -67,81 +64,17 @@ public class OrdersActivity extends AppCompatActivity {
 
     }
 
-    private void addOrdersToList() {
-        List<Integer> ordersIds = new ArrayList<>();
-        for (FullOrder order:list){
-            int id = order.getId();
-            if (!ordersIds.contains(id)) {
-                ordersIds.add(id);
-            }
-        }
-
-        if (!myPharmacyOrders.isEmpty()) {
-            for (PharmacyOrder pharmacyOrder : myPharmacyOrders) {
-                int id = Integer.parseInt(pharmacyOrder.getOrderId());
-                if (!ordersIds.contains(id)) {
-                    ordersIds.add(id);
-                }
-            }
-        }
-        for (int id:ordersIds){
-            Order order = new Order(id);
-                for (FullOrder fullOrder : list) {
-                    int orderId = fullOrder.getId();
-                    if (orderId == id) {
-                        order.setFullOrder(fullOrder);
-                        break;
-                    }
-                }
-            List<PharmacyOrder> pharmacyOrders = new ArrayList<>();
-            if (!myPharmacyOrders.isEmpty()) {
-                for (PharmacyOrder pharmacyOrder : myPharmacyOrders) {
-                    int orderId = Integer.parseInt(pharmacyOrder.getOrderId());
-                    if (orderId == id) {
-                        pharmacyOrders.add(pharmacyOrder);
-                    }
-                }
-            }
-            order.setPharmacyOrders(pharmacyOrders);
-            orders.add(order);
-            adapter.notifyDataSetChanged();
-        }
-
-    }
-
-
-    void  getMyPharmacyOrders(){
-        homeViewModel.getMyPharmacyOrders().observe(this,pharmacyOrders -> {
-            if (!pharmacyOrders.isEmpty()) {
-                myPharmacyOrders.clear();
-                myPharmacyOrders.addAll(pharmacyOrders);
-                binding.noOrdersText.setVisibility(View.GONE);
-                binding.noOrdersText.setText("لا يوجد طلبات ...");
-                binding.noOrders.setVisibility(View.GONE);
-            } else {
-                binding.noOrdersText.setVisibility(View.VISIBLE);
-                binding.noOrdersText.setText("لا يوجد طلبات ...");
-                binding.noOrders.setVisibility(View.VISIBLE);
-            }
-            addOrdersToList();
-        });
-    }
-
-
     void getCurrentOrders() {
-        homeViewModel.getAllCurrentOrdersLiveData().observe(OrdersActivity.this, new Observer<List<FullOrder>>() {
+        homeViewModel.getAllCurrentOrdersLiveData().observe(OrdersActivity.this, new Observer<List<Order>>() {
             @Override
-            public void onChanged(List<FullOrder> fullOrders) {
-                if (!fullOrders.isEmpty()) {
-                    list.clear();
-                    for (FullOrder order : fullOrders) {
-                        if (order.getUserId().equals(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid())) {
-                            list.add(order);
-
-                        }
+            public void onChanged(List<Order> orders) {
+                if (!orders.isEmpty()) {
+                    ordersList.clear();
+                    for (Order order : orders) {
+                            ordersList.add(order);
+                            Log.d("orderUserId",order.getUserId());
                     }
-                    Log.d(TAG, "ordersSize "+list.size());
-                    getMyPharmacyOrders();
+                    adapter.notifyDataSetChanged();
                     binding.noOrdersText.setVisibility(View.GONE);
                     binding.noOrdersText.setText("لا يوجد طلبات ...");
                     binding.noOrders.setVisibility(View.GONE);
@@ -156,21 +89,6 @@ public class OrdersActivity extends AppCompatActivity {
         });
     }
 
-    private void isFinishedLoading() {
-        homeViewModel.getCurrentOrdersFinishLoading().observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean) {
-                    if (list.isEmpty()) {
-                        binding.progressBar.hide();
-                        binding.noOrdersText.setVisibility(View.VISIBLE);
-                        binding.noOrdersText.setText("لا يوجد طلبات ...");
-                        binding.noOrders.setVisibility(View.VISIBLE);
-                    }
-                }
-            }
-        });
-    }
 
     public boolean isConnected() {
         boolean connected = false;

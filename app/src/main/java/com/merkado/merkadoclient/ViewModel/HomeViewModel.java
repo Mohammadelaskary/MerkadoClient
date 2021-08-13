@@ -9,6 +9,7 @@ import com.merkado.merkadoclient.Model.Cart;
 import com.merkado.merkadoclient.Model.DepartmentNames;
 import com.merkado.merkadoclient.Model.FullOrder;
 import com.merkado.merkadoclient.Model.Neighborhood;
+import com.merkado.merkadoclient.Model.Order;
 import com.merkado.merkadoclient.Model.OverTotalMoneyDiscount;
 import com.merkado.merkadoclient.Model.PharmacyOrder;
 import com.merkado.merkadoclient.Model.PointsDiscount;
@@ -39,8 +40,8 @@ public class HomeViewModel extends ViewModel {
     private MutableLiveData<List<User>> allUsersLiveData;
     private MutableLiveData<Shipping> shippingMutableLiveData;
     private MutableLiveData<List<Neighborhood>> neighborhoodLiveData;
-    private MutableLiveData<List<FullOrder>> allCurrentOrdersLiveData;
-    private MutableLiveData<List<FullOrder>> allPreOrdersLiveData;
+    private MutableLiveData<List<Order>> allCurrentOrdersLiveData;
+    private MutableLiveData<List<Order>> allPreOrdersLiveData;
     private MutableLiveData<Boolean> currentOrdersFinishLoading;
     private MutableLiveData<Boolean> preOrdersFinishLoading;
     private MutableLiveData<List<String>> allSerialsLiveData;
@@ -85,11 +86,11 @@ public class HomeViewModel extends ViewModel {
         return currentOrdersFinishLoading;
     }
 
-    public LiveData<List<FullOrder>> getAllCurrentOrdersLiveData() {
+    public LiveData<List<Order>> getAllCurrentOrdersLiveData() {
         return allCurrentOrdersLiveData;
     }
 
-    public LiveData<List<FullOrder>> getAllPreOrdersLiveData() {
+    public LiveData<List<Order>> getAllPreOrdersLiveData() {
         return allPreOrdersLiveData;
     }
 
